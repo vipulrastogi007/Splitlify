@@ -1,0 +1,2517 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Splitlify- Bill Splitter</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif']
+                    },
+                    colors: {
+                        primary: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            200: '#c7d2fe',
+                            300: '#a5b4fc',
+                            400: '#818cf8',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            800: '#3730a3',
+                            900: '#312e81'
+                        },
+                        accent: {
+                            50: '#fdf4ff',
+                            100: '#fae8ff',
+                            200: '#f5d0fe',
+                            300: '#f0abfc',
+                            400: '#e879f9',
+                            500: '#d946ef',
+                            600: '#c026d3',
+                            700: '#a21caf'
+                        },
+                        success: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            400: '#4ade80',
+                            500: '#22c55e',
+                            600: '#16a34a'
+                        },
+                        warning: {
+                            50: '#fffbeb',
+                            400: '#fbbf24',
+                            500: '#f59e0b'
+                        },
+                        danger: {
+                            50: '#fef2f2',
+                            400: '#f87171',
+                            500: '#ef4444',
+                            600: '#dc2626'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        * {
+            -webkit-tap-highlight-color: transparent;
+            box-sizing: border-box;
+        }
+        
+        html,
+        body {
+            overscroll-behavior: none;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Page Transitions */
+        
+        .page {
+            display: none;
+            opacity: 0;
+            transform: translateX(30px);
+            transition: opacity 0.35s ease, transform 0.35s ease;
+            position: absolute;
+            inset: 0;
+            overflow-y: auto;
+            padding-bottom: 80px;
+        }
+        
+        .page.active {
+            display: block;
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .page.slide-out {
+            opacity: 0;
+            transform: translateX(-30px);
+        }
+        /* Splash */
+        
+        .splash-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #6366f1, #d946ef);
+            transition: opacity 0.5s ease;
+        }
+        
+        .splash-screen.hide {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .splash-logo {
+            animation: pulse-splash 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes pulse-splash {
+            0%,
+            100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+        }
+        /* Custom scrollbar */
+        
+         ::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+         ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+         ::-webkit-scrollbar-thumb {
+            background: #6366f1;
+            border-radius: 4px;
+        }
+        /* Bottom nav */
+        
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 50;
+        }
+        
+        .nav-item {
+            transition: all 0.3s ease;
+        }
+        
+        .nav-item.active {
+            color: #6366f1;
+            transform: translateY(-2px);
+        }
+        
+        .dark .nav-item.active {
+            color: #818cf8;
+        }
+        /* Glass effect */
+        
+        .glass {
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        
+        .dark .glass-bg {
+            background: rgba(15, 15, 30, 0.85);
+        }
+        
+        .glass-bg {
+            background: rgba(255, 255, 255, 0.85);
+        }
+        /* Card hover */
+        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.15);
+        }
+        /* Toggle switch */
+        
+        .toggle-switch {
+            width: 48px;
+            height: 26px;
+            border-radius: 13px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: white;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .toggle-switch.on {
+            background: #6366f1;
+        } 
+        .toggle-switch.on::after {
+            transform: translateX(22px);
+        }
+        
+        .toggle-switch.off {
+            background: #d1d5db;
+        }
+        /* Pin dots */
+        
+        .pin-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 2px solid #6366f1;
+            transition: all 0.2s;
+        }
+        
+        .pin-dot.filled {
+            background: #6366f1;
+        }
+        /* Shimmer */
+        
+        .shimmer {
+            background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.4) 50%, transparent 100%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% {
+                background-position: -200% 0;
+            }
+            100% {
+                background-position: 200% 0;
+            }
+        }
+        /* Fade in up */
+        
+        .fade-in-up {
+            animation: fadeInUp 0.5s ease forwards;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .stagger-1 {
+            animation-delay: 0.1s;
+            opacity: 0;
+        }
+        
+        .stagger-2 {
+            animation-delay: 0.2s;
+            opacity: 0;
+        }
+        
+        .stagger-3 {
+            animation-delay: 0.3s;
+            opacity: 0;
+        }
+        
+        .stagger-4 {
+            animation-delay: 0.4s;
+            opacity: 0;
+        }
+        
+        .stagger-5 {
+            animation-delay: 0.5s;
+            opacity: 0;
+        }
+        /* Progress ring */
+        
+        .progress-ring {
+            transform: rotate(-90deg);
+        }
+        /* Toast */
+        
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            z-index: 9999;
+            transition: transform 0.4s ease;
+        }
+        
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+        /* Modal */
+        
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        
+        .modal-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        .modal-sheet {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 101;
+            transform: translateY(100%);
+            transition: transform 0.35s ease;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+        
+        .modal-sheet.show {
+            transform: translateY(0);
+        }
+        /* Bill scanner animation */
+        
+        .scan-line {
+            position: absolute;
+            left: 10%;
+            right: 10%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #6366f1, #d946ef, #6366f1, transparent);
+            animation: scanLine 2s ease-in-out infinite;
+        }
+        
+        @keyframes scanLine {
+            0% {
+                top: 20%;
+            }
+            50% {
+                top: 80%;
+            }
+            100% {
+                top: 20%;
+            }
+        }
+        /* Floating action button */
+        
+        .fab {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            z-index: 40;
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+            transition: all 0.3s;
+        }
+        
+        .fab:hover {
+            transform: scale(1.1);
+        }
+        
+        input,
+        select,
+        textarea {
+            font-family: 'Inter', sans-serif;
+        }
+        /* UPI app icons */
+        
+        .upi-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 12px;
+        }
+        /* Animations for numbers */
+        
+        .count-up {
+            transition: all 0.5s ease;
+        }
+
+        /* ===== DARK MODE COMPREHENSIVE FIXES ===== */
+
+        /* Page background in dark */
+        .dark .page {
+            background-color: #030712;
+        }
+
+        /* Login page dark */
+        .dark #page-login > div {
+            background-color: #030712;
+        }
+
+        /* Login buttons in dark get proper contrast - only bg and border, not text color forced */
+        .dark #page-login button.border {
+            background-color: #1f2937 !important;
+            border-color: #374151 !important;
+        }
+
+        /* All text inputs visible in dark */
+        .dark input:not([type="file"]),
+        .dark select,
+        .dark textarea {
+            color: #f3f4f6;
+        }
+        .dark input::placeholder,
+        .dark textarea::placeholder {
+            color: #6b7280;
+        }
+
+        /* Nav items default text color */
+        .dark .nav-item:not(.active) {
+            color: #9ca3af;
+        }
+
+        /* Back/action buttons that use bg-white - only in dark mode */
+        .dark button.bg-white:not([class*="text-"]) {
+            background-color: #1f2937 !important;
+        }
+
+        /* Spending chart bar labels */
+        .dark #spending-labels span {
+            color: #9ca3af;
+        }
+
+        /* FAQ toggle buttons */
+        .dark .faq-item button {
+            color: #f3f4f6;
+        }
+        .dark .faq-answer {
+            color: #9ca3af;
+        }
+
+        /* Modal inputs */
+        .dark #modal-content input,
+        .dark #modal-content select {
+            background-color: #374151;
+            color: #f3f4f6;
+        }
+
+        /* Currency selects */
+        .dark select option {
+            background-color: #1f2937;
+            color: #f3f4f6;
+        }
+
+        /* Bill filter tab text */
+        .dark .bill-filter:not(.active) {
+            color: #d1d5db;
+        }
+
+        /* Profile heading */
+        .dark #page-profile h1 {
+            color: #f9fafb;
+        }
+
+        /* Scanning area stays dark always */
+        #scanning-area .bg-gray-900 {
+            background-color: #111827;
+        }
+
+        /* Installments primary badge text */
+        .dark .text-primary-600 {
+            color: #a5b4fc;
+        }
+
+        /* Bottom nav glass in dark */
+        .dark .bottom-nav {
+            border-top-color: rgba(55,65,81,0.6);
+        }
+
+        /* Search input icon color */
+        .dark [data-lucide="search"] {
+            color: #6b7280;
+        }
+
+        /* Remove harsh box shadows in dark */
+        .dark .shadow-lg {
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        /* Scrollbar track in dark */
+        .dark ::-webkit-scrollbar-track {
+            background: #111827;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 min-h-screen max-w-lg mx-auto relative overflow-x-hidden">
+
+    <!-- Splash Screen -->
+    <div id="splash" class="splash-screen">
+        <div class="text-center splash-logo">
+            <div class="w-20 h-20 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4 backdrop-blur-lg">
+                <i data-lucide="split" class="w-10 h-10 text-white"></i>
+            </div>
+            <h1 class="text-3xl font-bold text-white">Splitlify</h1>
+            <p class="text-white/70 mt-1">Split bills effortlessly</p>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast">
+        <div class="bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-5 py-3 rounded-xl shadow-xl flex items-center gap-2 text-sm font-medium">
+            <i data-lucide="check-circle" class="w-4 h-4 text-green-400 dark:text-green-600"></i>
+            <span id="toast-msg">Success</span>
+        </div>
+    </div>
+
+    <!-- App Lock Screen -->
+    <div id="lock-screen" class="fixed inset-0 z-[200] bg-gray-50 dark:bg-gray-950 flex flex-col items-center justify-center" style="display:none;">
+        <div class="text-center mb-8">
+            <div class="w-20 h-20 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i data-lucide="lock" class="w-8 h-8 text-primary-500"></i>
+            </div>
+            <h2 class="text-xl font-bold">App Locked</h2>
+            <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Enter PIN to unlock</p>
+        </div>
+        <div class="flex gap-3 mb-8" id="pin-dots">
+            <div class="pin-dot"></div>
+            <div class="pin-dot"></div>
+            <div class="pin-dot"></div>
+            <div class="pin-dot"></div>
+        </div>
+        <div class="grid grid-cols-3 gap-3 w-64">
+            <button onclick="enterPin(1)" class="h-14 rounded-xl bg-white dark:bg-gray-800 shadow text-xl font-semibold active:scale-95 transition-transform">1</button>
+            <button onclick="enterPin(2)" class="h-14 rounded-xl bg-white dark:bg-gray-800 shadow text-xl font-semibold active:scale-95 transition-transform">2</button>
+            <button onclick="enterPin(3)" class="h-14 rounded-xl bg-white dark:bg-gray-800 shadow text-xl font-semibold active:scale-95 transition-transform">3</button>
+            <button onclick="enterPin(4)" class="h-14 rounded-xl bg-white dark:bg-gray-800 shadow text-xl font-semibold active:scale-95 transition-transform">4</button>
+            <button onclick="enterPin(5)" class="h-14 rounded-xl bg-white dark:bg-gray-800 shadow text-xl font-semibold active:scale-95 transition-transform">5</button>
+            <button onclick="enterPin(6)" class="h-14 rounded-xl bg-white dark:bg-gray-800 shadow text-xl font-semibold active:scale-95 transition-transform">6</button>
+            <button onclick="enterPin(7)" class="h-14 rounded-xl bg-white dark:bg-gray-800 shadow text-xl font-semibold active:scale-95 transition-transform">7</button>
+            <button onclick="enterPin(8)" class="h-14 rounded-xl bg-white dark:bg-gray-800 shadow text-xl font-semibold active:scale-95 transition-transform">8</button>
+            <button onclick="enterPin(9)" class="h-14 rounded-xl bg-white dark:bg-gray-800 shadow text-xl font-semibold active:scale-95 transition-transform">9</button>
+            <button onclick="enterPin('bio')" class="h-14 rounded-xl bg-white dark:bg-gray-800 shadow text-xl active:scale-95 transition-transform"><i data-lucide="fingerprint" class="w-5 h-5 mx-auto text-primary-500"></i></button>
+            <button onclick="enterPin(0)" class="h-14 rounded-xl bg-white dark:bg-gray-800 shadow text-xl font-semibold active:scale-95 transition-transform">0</button>
+            <button onclick="enterPin('del')" class="h-14 rounded-xl bg-white dark:bg-gray-800 shadow text-xl active:scale-95 transition-transform"><i data-lucide="delete" class="w-5 h-5 mx-auto text-gray-400"></i></button>
+        </div>
+    </div>
+
+    <!-- ==================== PAGES ==================== -->
+
+    <!-- LOGIN PAGE -->
+    <div id="page-login" class="page active">
+        <div class="min-h-screen flex flex-col justify-center px-6 py-10 relative overflow-hidden bg-gray-50 dark:bg-gray-950">
+            <div class="absolute top-0 left-0 w-64 h-64 bg-primary-400/20 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
+            <div class="absolute bottom-0 right-0 w-64 h-64 bg-accent-400/20 rounded-full blur-3xl translate-x-1/2 translate-y-1/2"></div>
+
+            <div class="relative z-10">
+                <div class="text-center mb-10 fade-in-up">
+                    <div class="w-16 h-16 bg-gradient-to-br from-primary-500 to-accent-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-primary-500/30">
+                        <i data-lucide="split" class="w-8 h-8 text-white"></i>
+                    </div>
+                    <h1 class="text-3xl font-bold bg-gradient-to-r from-primary-500 to-accent-500 bg-clip-text text-transparent">Splitlify</h1>
+                    <p class="text-gray-500 dark:text-gray-400 mt-2">Split bills effortlessly with friends</p>
+                </div>
+
+                <div class="space-y-3 fade-in-up stagger-2">
+                    <button onclick="loginWith('google')" class="w-full flex items-center justify-center gap-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl py-3.5 px-4 font-medium shadow-sm active:scale-[0.98] transition-transform text-gray-800 dark:text-gray-100">
+                        <svg class="w-5 h-5" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+                        Continue with Google
+                    </button>
+                    <button onclick="loginWith('facebook')" class="w-full flex items-center justify-center gap-3 bg-[#1877F2] text-white rounded-xl py-3.5 px-4 font-medium shadow-sm active:scale-[0.98] transition-transform">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                        Continue with Facebook
+                    </button>
+                    <button onclick="showLoginEmail()" class="w-full flex items-center justify-center gap-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl py-3.5 px-4 font-medium shadow-sm active:scale-[0.98] transition-transform text-gray-800 dark:text-gray-100">
+                        <i data-lucide="mail" class="w-5 h-5 text-primary-500"></i>
+                        Continue with Email
+                    </button>
+                    <button onclick="loginWith('phone')" class="w-full flex items-center justify-center gap-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl py-3.5 px-4 font-medium shadow-sm active:scale-[0.98] transition-transform text-gray-800 dark:text-gray-100">
+                        <i data-lucide="phone" class="w-5 h-5 text-green-500"></i>
+                        Continue with Phone
+                    </button>
+                </div>
+
+                <!-- Email login form (hidden initially) -->
+                <div id="email-login-form" class="mt-4 space-y-3" style="display:none;">
+                    <input type="email" id="login-email" placeholder="Email address" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
+                    <input type="password" id="login-pass" placeholder="Password" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
+                    <button onclick="loginWithEmail()" class="w-full bg-gradient-to-r from-primary-500 to-accent-500 text-white rounded-xl py-3.5 font-semibold shadow-lg shadow-primary-500/30 active:scale-[0.98] transition-transform">Sign In</button>
+                </div>
+
+                <div id="phone-login-form" class="mt-4 space-y-3" style="display:none;">
+                    <input type="tel" id="login-phone" placeholder="Phone number" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
+                    <div class="flex gap-2">
+                        <input type="text" id="login-otp" placeholder="OTP" class="flex-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
+                        <button onclick="sendOTP()" class="bg-primary-500 text-white rounded-xl px-4 text-sm font-medium">Send</button>
+                    </div>
+                    <button onclick="loginWithPhone()" class="w-full bg-gradient-to-r from-primary-500 to-accent-500 text-white rounded-xl py-3.5 font-semibold shadow-lg shadow-primary-500/30 active:scale-[0.98] transition-transform">Verify & Sign In</button>
+                </div>
+
+                <p class="text-center text-xs text-gray-400 mt-6">By continuing, you agree to our <span class="text-primary-500">Terms</span> & <span class="text-primary-500">Privacy Policy</span></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- HOME / DASHBOARD -->
+    <div id="page-home" class="page">
+        <div class="px-5 pt-6 pb-4">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400" id="time-greeting">Welcome back 👋</p>
+                    <h1 class="text-xl font-bold" id="user-greeting">Vipul Rastogi</h1>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button onclick="navigateTo('currency')" class="w-10 h-10 rounded-xl bg-white dark:bg-gray-800 shadow-sm flex items-center justify-center text-gray-700 dark:text-gray-200">
+                        <i data-lucide="repeat" class="w-5 h-5 text-primary-500"></i>
+                    </button>
+                    <button onclick="navigateTo('profile')" class="w-10 h-10 rounded-full overflow-hidden shadow-sm">
+                        <img src="http://static.photos/people/200x200/1" class="w-full h-full object-cover" alt="avatar">
+                    </button>
+                </div>
+            </div>
+
+            <!-- Balance Card -->
+            <div class="bg-gradient-to-br from-primary-500 via-primary-600 to-accent-500 rounded-2xl p-5 mb-6 shadow-lg shadow-primary-500/20 relative overflow-hidden fade-in-up">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+                <div class="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2"></div>
+                <div class="relative z-10">
+                    <p class="text-white/70 text-sm">Total Balance</p>
+                    <h2 class="text-3xl font-bold text-white mt-1" id="total-balance">₹0.00</h2>
+                    <div class="flex items-center gap-4 mt-4">
+                        <div class="flex-1">
+                            <p class="text-white/60 text-xs">You are owed</p>
+                            <p class="text-white font-semibold" id="owed-amount">₹0.00</p>
+                        </div>
+                        <div class="w-px h-8 bg-white/20"></div>
+                        <div class="flex-1">
+                            <p class="text-white/60 text-xs">You owe</p>
+                            <p class="text-white font-semibold" id="owe-amount">₹0.00</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="grid grid-cols-4 gap-3 mb-6 fade-in-up stagger-1">
+                <button onclick="navigateTo('scanner')" class="flex flex-col items-center gap-1.5 py-3 rounded-xl bg-primary-50 dark:bg-primary-900/20 active:scale-95 transition-transform">
+                    <div class="w-10 h-10 bg-primary-100 dark:bg-primary-800/30 rounded-xl flex items-center justify-center"><i data-lucide="scan" class="w-5 h-5 text-primary-500"></i></div>
+                    <span class="text-xs font-medium">Scan</span>
+                </button>
+                <button onclick="navigateTo('friends')" class="flex flex-col items-center gap-1.5 py-3 rounded-xl bg-accent-50 dark:bg-accent-900/20 active:scale-95 transition-transform">
+                    <div class="w-10 h-10 bg-accent-100 dark:bg-accent-800/30 rounded-xl flex items-center justify-center"><i data-lucide="users" class="w-5 h-5 text-accent-500"></i></div>
+                    <span class="text-xs font-medium">Friends</span>
+                </button>
+                <button onclick="navigateTo('groups')" class="flex flex-col items-center gap-1.5 py-3 rounded-xl bg-success-50 dark:bg-success-900/20 active:scale-95 transition-transform">
+                    <div class="w-10 h-10 bg-success-100 dark:bg-success-800/30 rounded-xl flex items-center justify-center"><i data-lucide="user-plus" class="w-5 h-5 text-success-500"></i></div>
+                    <span class="text-xs font-medium">Groups</span>
+                </button>
+                <button onclick="navigateTo('installments')" class="flex flex-col items-center gap-1.5 py-3 rounded-xl bg-warning-50 dark:bg-warning-900/20 active:scale-95 transition-transform">
+                    <div class="w-10 h-10 bg-warning-100 dark:bg-warning-800/30 rounded-xl flex items-center justify-center"><i data-lucide="calendar-clock" class="w-5 h-5 text-warning-500"></i></div>
+                    <span class="text-xs font-medium">EMI</span>
+                </button>
+            </div>
+
+            <!-- Monthly Spending -->
+            <div class="mb-6 fade-in-up stagger-2">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="font-semibold flex items-center gap-1.5"><i data-lucide="bar-chart-2" class="w-4 h-4 text-primary-500"></i>Monthly Spending</h3>
+                    <span class="text-xs text-primary-500 font-medium cursor-pointer" onclick="navigateTo('bills')">View All</span>
+                </div>
+                <div class="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm">
+                    <div class="flex items-end justify-between mb-3" id="spending-chart">
+                        <!-- Bars will be rendered by JS -->
+                    </div>
+                    <div class="flex justify-between text-xs text-gray-400" id="spending-labels"></div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="fade-in-up stagger-3">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="font-semibold flex items-center gap-1.5"><i data-lucide="clock" class="w-4 h-4 text-primary-500"></i>Recent Activity</h3>
+                    <span class="text-xs text-primary-500 font-medium cursor-pointer" onclick="navigateTo('bills')">See All</span>
+                </div>
+                <div class="space-y-3" id="recent-activity">
+                    <!-- Rendered by JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BILL SCANNER -->
+    <div id="page-scanner" class="page">
+        <div class="px-5 pt-6 pb-4">
+            <div class="flex items-center gap-3 mb-6">
+                <button onclick="goBack()" class="w-10 h-10 rounded-xl bg-white dark:bg-gray-800 shadow-sm flex items-center justify-center"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
+                <h1 class="text-xl font-bold">Scan Bill</h1>
+            </div>
+
+            <!-- Upload Area -->
+            <div id="upload-area" class="border-2 border-dashed border-primary-300 dark:border-primary-700 rounded-2xl p-8 text-center mb-6 cursor-pointer hover:bg-primary-50 dark:hover:bg-primary-900/10 transition-colors" onclick="document.getElementById('bill-file').click()">
+                <input type="file" id="bill-file" accept="image/*" capture="environment" class="hidden" onchange="handleBillUpload(event)">
+                <div class="w-16 h-16 bg-primary-100 dark:bg-primary-900/30 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                    <i data-lucide="camera" class="w-8 h-8 text-primary-500"></i>
+                </div>
+                <h3 class="font-semibold mb-1">Upload Bill</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Tap to take a photo or upload from gallery</p>
+            </div>
+
+            <!-- Scanning Animation -->
+            <div id="scanning-area" class="hidden mb-6">
+                <div class="relative bg-gray-900 rounded-2xl overflow-hidden" style="min-height:250px;">
+                    <img id="bill-preview" class="w-full h-64 object-cover opacity-70" src="" alt="bill">
+                    <div class="scan-line"></div>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <div class="bg-white/20 backdrop-blur-sm rounded-xl px-4 py-2 flex items-center gap-2">
+                            <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            <span class="text-white text-sm font-medium">AI is reading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bill Result -->
+            <div id="bill-result" class="hidden space-y-4">
+                <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-bold text-lg">Bill Details</h3>
+                        <span class="bg-success-100 dark:bg-success-900/30 text-success-600 dark:text-success-400 text-xs font-semibold px-2.5 py-1 rounded-full">AI Scanned</span>
+                    </div>
+                    <div class="space-y-2 mb-4" id="bill-items-list"></div>
+                    <div class="border-t border-gray-100 dark:border-gray-700 pt-3 flex justify-between">
+                        <span class="font-bold">Total</span>
+                        <span class="font-bold text-primary-500" id="bill-total">₹0.00</span>
+                    </div>
+                </div>
+
+                <!-- Who Paid -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm">
+                    <h3 class="font-bold mb-3">Who paid the bill?</h3>
+                    <div class="flex flex-wrap gap-2 mb-4" id="payer-list"></div>
+                    <div id="payer-amount-input" class="hidden">
+                        <label class="text-sm text-gray-500 block mb-1">Amount paid</label>
+                        <input type="number" id="payer-amount" class="w-full bg-gray-50 dark:bg-gray-700 rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="0.00">
+                    </div>
+                </div>
+
+                <!-- Split Among -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="font-bold">Split among</h3>
+                        <button onclick="showAddPersonModal()" class="text-primary-500 text-sm font-medium flex items-center gap-1"><i data-lucide="plus" class="w-4 h-4"></i>Add</button>
+                    </div>
+                    <div class="space-y-2" id="split-members-list"></div>
+                    <div class="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-500">Per person</span>
+                            <span class="font-bold text-primary-500" id="per-person-amount">₹0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="saveBillSplit()" class="w-full bg-gradient-to-r from-primary-500 to-accent-500 text-white rounded-xl py-4 font-semibold shadow-lg shadow-primary-500/30 active:scale-[0.98] transition-transform">
+                    Save & Split Bill
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- BILLS HISTORY -->
+    <div id="page-bills" class="page">
+        <div class="px-5 pt-6 pb-4">
+            <div class="flex items-center justify-between mb-6">
+                <h1 class="text-xl font-bold">Bills History</h1>
+                <button onclick="navigateTo('scanner')" class="w-10 h-10 rounded-xl bg-primary-500 shadow-sm flex items-center justify-center"><i data-lucide="plus" class="w-5 h-5 text-white"></i></button>
+            </div>
+            <!-- Filter tabs -->
+            <div class="flex gap-2 mb-4 overflow-x-auto pb-1">
+                <button class="bill-filter active bg-primary-500 text-white px-4 py-1.5 rounded-full text-xs font-medium whitespace-nowrap flex items-center gap-1.5" data-filter="all"><i data-lucide="layout-list" class="w-3 h-3"></i>All</button>
+                <button class="bill-filter bg-gray-100 dark:bg-gray-800 px-4 py-1.5 rounded-full text-xs font-medium whitespace-nowrap flex items-center gap-1.5" data-filter="owed"><i data-lucide="arrow-down-left" class="w-3 h-3"></i>Owed to me</button>
+                <button class="bill-filter bg-gray-100 dark:bg-gray-800 px-4 py-1.5 rounded-full text-xs font-medium whitespace-nowrap flex items-center gap-1.5" data-filter="owe"><i data-lucide="arrow-up-right" class="w-3 h-3"></i>I owe</button>
+                <button class="bill-filter bg-gray-100 dark:bg-gray-800 px-4 py-1.5 rounded-full text-xs font-medium whitespace-nowrap flex items-center gap-1.5" data-filter="settled"><i data-lucide="check-circle" class="w-3 h-3"></i>Settled</button>
+            </div>
+            <div class="space-y-3" id="bills-list"></div>
+        </div>
+    </div>
+
+    <!-- FRIENDS -->
+    <div id="page-friends" class="page">
+        <div class="px-5 pt-6 pb-4">
+            <div class="flex items-center justify-between mb-6">
+                <h1 class="text-xl font-bold">Friends</h1>
+                <button onclick="showAddFriendModal()" class="w-10 h-10 rounded-xl bg-primary-500 shadow-sm flex items-center justify-center"><i data-lucide="user-plus" class="w-5 h-5 text-white"></i></button>
+            </div>
+            <!-- Search -->
+            <div class="relative mb-4">
+                <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                <input type="text" id="friend-search" placeholder="Search friends..." class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" oninput="filterFriends()">
+            </div>
+            <!-- Favorites -->
+            <div class="mb-5">
+                <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">⭐ Favorites</h3>
+                <div class="flex gap-3 overflow-x-auto pb-2" id="favorite-friends"></div>
+            </div>
+            <!-- All Friends -->
+            <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">All Friends</h3>
+            <div class="space-y-2" id="all-friends-list"></div>
+        </div>
+    </div>
+
+    <!-- GROUPS -->
+    <div id="page-groups" class="page">
+        <div class="px-5 pt-6 pb-4">
+            <div class="flex items-center justify-between mb-6">
+                <h1 class="text-xl font-bold">Groups</h1>
+                <button onclick="showCreateGroupModal()" class="w-10 h-10 rounded-xl bg-primary-500 shadow-sm flex items-center justify-center"><i data-lucide="plus" class="w-5 h-5 text-white"></i></button>
+            </div>
+            <div class="space-y-3" id="groups-list"></div>
+        </div>
+    </div>
+
+    <!-- GROUP DETAIL -->
+    <div id="page-group-detail" class="page">
+        <div class="px-5 pt-6 pb-4">
+            <div class="flex items-center gap-3 mb-6">
+                <button onclick="goBack()" class="w-10 h-10 rounded-xl bg-white dark:bg-gray-800 shadow-sm flex items-center justify-center"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
+                <div>
+                    <h1 class="text-xl font-bold" id="group-detail-name">Group</h1>
+                    <p class="text-xs text-gray-500" id="group-detail-members">0 members</p>
+                </div>
+            </div>
+            <!-- Group balance -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm mb-4">
+                <h3 class="font-bold mb-3 flex items-center gap-2"><i data-lucide="wallet" class="w-4 h-4 text-primary-500"></i>Group Balance</h3>
+                <div class="space-y-2" id="group-balances"></div>
+            </div>
+            <!-- Group bills -->
+            <h3 class="font-bold mb-3 flex items-center gap-2"><i data-lucide="receipt" class="w-4 h-4 text-primary-500"></i>Recent Bills</h3>
+            <div class="space-y-3" id="group-bills"></div>
+        </div>
+    </div>
+
+    <!-- PROFILE -->
+    <div id="page-profile" class="page">
+        <div class="px-5 pt-6 pb-4">
+            <h1 class="text-xl font-bold mb-6">Profile</h1>
+            <div class="text-center mb-6">
+                <div class="w-20 h-20 rounded-full overflow-hidden mx-auto mb-3 ring-4 ring-primary-100 dark:ring-primary-900/30">
+                    <img src="http://static.photos/people/200x200/1" class="w-full h-full object-cover" alt="avatar">
+                </div>
+                <h2 class="text-lg font-bold" id="profile-name">Vipul Rastogi</h2>
+                <p class="text-sm text-gray-500" id="profile-email">rastogivipul148@gmail.com</p>
+            </div>
+            <!-- Stats -->
+            <div class="grid grid-cols-3 gap-3 mb-6">
+                <div class="bg-white dark:bg-gray-800 rounded-xl p-3 text-center shadow-sm">
+                    <p class="text-lg font-bold text-primary-500" id="stat-bills">0</p>
+                    <p class="text-xs text-gray-500">Bills</p>
+                </div>
+                <div class="bg-white dark:bg-gray-800 rounded-xl p-3 text-center shadow-sm">
+                    <p class="text-lg font-bold text-success-500" id="stat-friends">0</p>
+                    <p class="text-xs text-gray-500">Friends</p>
+                </div>
+                <div class="bg-white dark:bg-gray-800 rounded-xl p-3 text-center shadow-sm">
+                    <p class="text-lg font-bold text-accent-500" id="stat-groups">0</p>
+                    <p class="text-xs text-gray-500">Groups</p>
+                </div>
+            </div>
+            <!-- Menu -->
+            <div class="space-y-1">
+                <button onclick="navigateTo('settings')" class="w-full flex items-center gap-3 p-3.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                    <div class="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-xl flex items-center justify-center"><i data-lucide="settings" class="w-5 h-5 text-gray-600 dark:text-gray-300"></i></div>
+                    <span class="font-medium flex-1 text-left">Settings</span>
+                    <i data-lucide="chevron-right" class="w-4 h-4 text-gray-400"></i>
+                </button>
+                <button onclick="navigateTo('privacy')" class="w-full flex items-center gap-3 p-3.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                    <div class="w-10 h-10 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center"><i data-lucide="shield" class="w-5 h-5 text-blue-500"></i></div>
+                    <span class="font-medium flex-1 text-left">Privacy</span>
+                    <i data-lucide="chevron-right" class="w-4 h-4 text-gray-400"></i>
+                </button>
+                <button onclick="navigateTo('support')" class="w-full flex items-center gap-3 p-3.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                    <div class="w-10 h-10 bg-green-50 dark:bg-green-900/20 rounded-xl flex items-center justify-center"><i data-lucide="headphones" class="w-5 h-5 text-green-500"></i></div>
+                    <span class="font-medium flex-1 text-left">Support</span>
+                    <i data-lucide="chevron-right" class="w-4 h-4 text-gray-400"></i>
+                </button>
+                <button onclick="navigateTo('installments')" class="w-full flex items-center gap-3 p-3.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                    <div class="w-10 h-10 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl flex items-center justify-center"><i data-lucide="calendar-clock" class="w-5 h-5 text-yellow-500"></i></div>
+                    <span class="font-medium flex-1 text-left">Installments</span>
+                    <i data-lucide="chevron-right" class="w-4 h-4 text-gray-400"></i>
+                </button>
+                <button onclick="navigateTo('currency')" class="w-full flex items-center gap-3 p-3.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                    <div class="w-10 h-10 bg-purple-50 dark:bg-purple-900/20 rounded-xl flex items-center justify-center"><i data-lucide="repeat" class="w-5 h-5 text-purple-500"></i></div>
+                    <span class="font-medium flex-1 text-left">Currency Converter</span>
+                    <i data-lucide="chevron-right" class="w-4 h-4 text-gray-400"></i>
+                </button>
+                <button onclick="logout()" class="w-full flex items-center gap-3 p-3.5 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors">
+                    <div class="w-10 h-10 bg-red-50 dark:bg-red-900/20 rounded-xl flex items-center justify-center"><i data-lucide="log-out" class="w-5 h-5 text-red-500"></i></div>
+                    <span class="font-medium flex-1 text-left text-red-500">Log Out</span>
+                    <i data-lucide="chevron-right" class="w-4 h-4 text-gray-400"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="page-settings" class="page">
+        <div class="px-5 pt-6 pb-4">
+            <div class="flex items-center gap-3 mb-6">
+                <button onclick="goBack()" class="w-10 h-10 rounded-xl bg-white dark:bg-gray-800 shadow-sm flex items-center justify-center"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
+                <h1 class="text-xl font-bold">Settings</h1>
+            </div>
+            <div class="space-y-4">
+                <!-- Dark Mode -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-xl flex items-center justify-center"><i data-lucide="moon" class="w-5 h-5"></i></div>
+                        <div>
+                            <p class="font-medium">Dark Mode</p>
+                            <p class="text-xs text-gray-500">Switch theme</p>
+                        </div>
+                    </div>
+                    <div id="dark-toggle" class="toggle-switch off" onclick="toggleDarkMode()"></div>
+                </div>
+                <!-- App Lock -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-xl flex items-center justify-center"><i data-lucide="lock" class="w-5 h-5"></i></div>
+                        <div>
+                            <p class="font-medium">App Lock</p>
+                            <p class="text-xs text-gray-500">PIN / Biometrics</p>
+                        </div>
+                    </div>
+                    <div id="lock-toggle" class="toggle-switch off" onclick="toggleAppLock()"></div>
+                </div>
+                <!-- Currency -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm flex items-center justify-between cursor-pointer" onclick="showCurrencySelect()">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-xl flex items-center justify-center"><i data-lucide="indian-rupee" class="w-5 h-5"></i></div>
+                        <div>
+                            <p class="font-medium">Default Currency</p>
+                            <p class="text-xs text-gray-500" id="default-currency-label">INR (₹)</p>
+                        </div>
+                    </div>
+                    <i data-lucide="chevron-right" class="w-4 h-4 text-gray-400"></i>
+                </div>
+                <!-- Notifications -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-xl flex items-center justify-center"><i data-lucide="bell" class="w-5 h-5"></i></div>
+                        <div>
+                            <p class="font-medium">Notifications</p>
+                            <p class="text-xs text-gray-500">Push alerts</p>
+                        </div>
+                    </div>
+                    <div class="toggle-switch on" onclick="this.classList.toggle('on');this.classList.toggle('off')"></div>
+                </div>
+                <!-- Language -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm flex items-center justify-between cursor-pointer">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-xl flex items-center justify-center"><i data-lucide="globe" class="w-5 h-5"></i></div>
+                        <div>
+                            <p class="font-medium">Language</p>
+                            <p class="text-xs text-gray-500">English</p>
+                        </div>
+                    </div>
+                    <i data-lucide="chevron-right" class="w-4 h-4 text-gray-400"></i>
+                </div>
+                <!-- Set PIN -->
+                <div id="set-pin-section" class="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm hidden">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 bg-primary-50 dark:bg-primary-900/20 rounded-xl flex items-center justify-center"><i data-lucide="key-round" class="w-5 h-5 text-primary-500"></i></div>
+                        <div>
+                            <p class="font-medium">Set PIN</p>
+                            <p class="text-xs text-gray-500">4-digit PIN for app lock</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <input type="password" maxlength="1" class="pin-input w-12 h-12 text-center text-xl font-bold bg-gray-50 dark:bg-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500" oninput="pinInput(this,0)">
+                        <input type="password" maxlength="1" class="pin-input w-12 h-12 text-center text-xl font-bold bg-gray-50 dark:bg-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500" oninput="pinInput(this,1)">
+                        <input type="password" maxlength="1" class="pin-input w-12 h-12 text-center text-xl font-bold bg-gray-50 dark:bg-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500" oninput="pinInput(this,2)">
+                        <input type="password" maxlength="1" class="pin-input w-12 h-12 text-center text-xl font-bold bg-gray-50 dark:bg-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500" oninput="pinInput(this,3)">
+                    </div>
+                    <button onclick="savePin()" class="mt-3 w-full bg-primary-500 text-white rounded-xl py-2.5 text-sm font-medium flex items-center justify-center gap-2"><i data-lucide="save" class="w-4 h-4"></i>Save PIN</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PRIVACY -->
+    <div id="page-privacy" class="page">
+        <div class="px-5 pt-6 pb-4">
+            <div class="flex items-center gap-3 mb-6">
+                <button onclick="goBack()" class="w-10 h-10 rounded-xl bg-white dark:bg-gray-800 shadow-sm flex items-center justify-center"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
+                <h1 class="text-xl font-bold">Privacy</h1>
+            </div>
+            <div class="space-y-4">
+                <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center"><i data-lucide="eye-off" class="w-5 h-5 text-blue-500"></i></div>
+                        <div>
+                            <p class="font-medium">Data Privacy</p>
+                            <p class="text-xs text-gray-500">Your data stays on your device</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">All your bill and payment data is stored locally on your device. We never send your personal information to external servers.</p>
+                </div>
+                <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 bg-green-50 dark:bg-green-900/20 rounded-xl flex items-center justify-center"><i data-lucide="shield-check" class="w-5 h-5 text-green-500"></i></div>
+                        <div>
+                            <p class="font-medium">Secure Payments</p>
+                            <p class="text-xs text-gray-500">Encrypted transactions</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">All payment redirects use secure UPI protocols. No payment credentials are stored in the app.</p>
+                </div>
+                <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 bg-purple-50 dark:bg-purple-900/20 rounded-xl flex items-center justify-center"><i data-lucide="lock" class="w-5 h-5 text-purple-500"></i></div>
+                        <div>
+                            <p class="font-medium">App Lock</p>
+                            <p class="text-xs text-gray-500">Biometric & PIN protection</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Enable app lock in Settings to require PIN or biometric authentication every time you open the app.</p>
+                </div>
+                <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm">
+                    <h3 class="font-medium mb-3 flex items-center gap-2"><i data-lucide="file-text" class="w-4 h-4 text-primary-500"></i>Privacy Policy</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">Last updated: January 2025</p>
+                    <div class="mt-2 text-sm text-gray-500 dark:text-gray-400 space-y-2.5">
+                        <p class="flex items-start gap-2"><i data-lucide="database" class="w-4 h-4 text-blue-400 shrink-0 mt-0.5"></i>We collect minimal data necessary for app functionality</p>
+                        <p class="flex items-start gap-2"><i data-lucide="image" class="w-4 h-4 text-purple-400 shrink-0 mt-0.5"></i>Bill images are processed locally and not stored on servers</p>
+                        <p class="flex items-start gap-2"><i data-lucide="users" class="w-4 h-4 text-green-400 shrink-0 mt-0.5"></i>Friend and group data is stored only on your device</p>
+                        <p class="flex items-start gap-2"><i data-lucide="trash-2" class="w-4 h-4 text-red-400 shrink-0 mt-0.5"></i>You can delete all your data at any time from Settings</p>
+                        <p class="flex items-start gap-2"><i data-lucide="share-2" class="w-4 h-4 text-orange-400 shrink-0 mt-0.5"></i>We do not share any data with third parties</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SUPPORT -->
+    <div id="page-support" class="page">
+        <div class="px-5 pt-6 pb-4">
+            <div class="flex items-center gap-3 mb-6">
+                <button onclick="goBack()" class="w-10 h-10 rounded-xl bg-white dark:bg-gray-800 shadow-sm flex items-center justify-center"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
+                <h1 class="text-xl font-bold">Support</h1>
+            </div>
+            <div class="space-y-4">
+                <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm">
+                    <h3 class="font-bold mb-3 flex items-center gap-2"><i data-lucide="help-circle" class="w-4 h-4 text-primary-500"></i>Frequently Asked Questions</h3>
+                    <div class="space-y-2" id="faq-list">
+                        <div class="faq-item border border-gray-100 dark:border-gray-700 rounded-xl overflow-hidden">
+                            <button onclick="toggleFaq(this)" class="w-full flex items-center justify-between p-3 text-sm font-medium text-left gap-3">
+                                <span class="flex items-center gap-2"><i data-lucide="scan-line" class="w-4 h-4 text-primary-500 shrink-0"></i>How does bill scanning work?</span>
+                                <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 transition-transform shrink-0"></i>
+                            </button>
+                            <div class="faq-answer hidden px-3 pb-3 text-sm text-gray-500">Upload a photo of your bill and our AI will automatically detect items, prices, and total amount. You can then edit any details before splitting.</div>
+                        </div>
+                        <div class="faq-item border border-gray-100 dark:border-gray-700 rounded-xl overflow-hidden">
+                            <button onclick="toggleFaq(this)" class="w-full flex items-center justify-between p-3 text-sm font-medium text-left gap-3">
+                                <span class="flex items-center gap-2"><i data-lucide="credit-card" class="w-4 h-4 text-green-500 shrink-0"></i>How do I settle payments?</span>
+                                <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 transition-transform shrink-0"></i>
+                            </button>
+                            <div class="faq-answer hidden px-3 pb-3 text-sm text-gray-500">Tap "Pay Now" on any bill to redirect to your preferred UPI app (PhonePe, Google Pay, Paytm) for instant settlement.</div>
+                        </div>
+                        <div class="faq-item border border-gray-100 dark:border-gray-700 rounded-xl overflow-hidden">
+                            <button onclick="toggleFaq(this)" class="w-full flex items-center justify-between p-3 text-sm font-medium text-left gap-3">
+                                <span class="flex items-center gap-2"><i data-lucide="calendar-clock" class="w-4 h-4 text-yellow-500 shrink-0"></i>What are installments?</span>
+                                <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 transition-transform shrink-0"></i>
+                            </button>
+                            <div class="faq-answer hidden px-3 pb-3 text-sm text-gray-500">If someone can't pay the full amount at once, you can enable installment payments. They can pay in smaller amounts over time, and you can track each payment.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm">
+                    <h3 class="font-bold mb-3 flex items-center gap-2"><i data-lucide="message-square" class="w-4 h-4 text-green-500"></i>Contact Us</h3>
+                    <div class="space-y-2">
+                        <button class="w-full flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-700"><i data-lucide="mail" class="w-5 h-5 text-primary-500"></i><span class="text-sm">support@splitease.app</span></button>
+                        <button class="w-full flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-700"><i data-lucide="message-circle" class="w-5 h-5 text-green-500"></i><span class="text-sm">Live Chat</span></button>
+                        <button class="w-full flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-700"><i data-lucide="phone" class="w-5 h-5 text-blue-500"></i><span class="text-sm">+1 (800) 123-4567</span></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CURRENCY CONVERTER -->
+    <div id="page-currency" class="page">
+        <div class="px-5 pt-6 pb-4">
+            <div class="flex items-center gap-3 mb-6">
+                <button onclick="goBack()" class="w-10 h-10 rounded-xl bg-white dark:bg-gray-800 shadow-sm flex items-center justify-center"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
+                <h1 class="text-xl font-bold">Currency Converter</h1>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm mb-4">
+                <div class="mb-4">
+                    <label class="text-sm text-gray-500 block mb-1">From</label>
+                    <div class="flex gap-2">
+                        <select id="currency-from" class="bg-gray-50 dark:bg-gray-700 rounded-xl py-2.5 px-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary-500" onchange="convertCurrency()">
+                            <option value="INR">🇮🇳 INR</option>
+                            <option value="USD">🇺🇸 USD</option>
+                            <option value="EUR">🇪🇺 EUR</option>
+                            <option value="GBP">🇬🇧 GBP</option>
+                            <option value="JPY">🇯🇵 JPY</option>
+                            <option value="AUD">🇦🇺 AUD</option>
+                            <option value="CAD">🇨🇦 CAD</option>
+                            <option value="SGD">🇸🇬 SGD</option>
+                            <option value="AED">🇦🇪 AED</option>
+                            <option value="CNY">🇨🇳 CNY</option>
+                        </select>
+                        <input type="number" id="currency-amount" value="1000" class="flex-1 bg-gray-50 dark:bg-gray-700 rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" oninput="convertCurrency()">
+                    </div>
+                </div>
+                <div class="flex justify-center">
+                    <button onclick="swapCurrencies()" class="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center active:scale-95 transition-transform"><i data-lucide="arrow-up-down" class="w-5 h-5 text-primary-500"></i></button>
+                </div>
+                <div class="mt-4">
+                    <label class="text-sm text-gray-500 block mb-1">To</label>
+                    <div class="flex gap-2">
+                        <select id="currency-to" class="bg-gray-50 dark:bg-gray-700 rounded-xl py-2.5 px-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary-500" onchange="convertCurrency()">
+                            <option value="USD">🇺🇸 USD</option>
+                            <option value="INR">🇮🇳 INR</option>
+                            <option value="EUR">🇪🇺 EUR</option>
+                            <option value="GBP">🇬🇧 GBP</option>
+                            <option value="JPY">🇯🇵 JPY</option>
+                            <option value="AUD">🇦🇺 AUD</option>
+                            <option value="CAD">🇨🇦 CAD</option>
+                            <option value="SGD">🇸🇬 SGD</option>
+                            <option value="AED">🇦🇪 AED</option>
+                            <option value="CNY">🇨🇳 CNY</option>
+                        </select>
+                        <div class="flex-1 bg-primary-50 dark:bg-primary-900/20 rounded-xl py-2.5 px-4 text-sm font-bold text-primary-600 dark:text-primary-400" id="currency-result">--</div>
+                    </div>
+                </div>
+                <p class="text-xs text-gray-400 mt-3 text-center" id="currency-rate">1 INR = 0.012 USD</p>
+            </div>
+            <!-- Popular conversions -->
+            <h3 class="font-bold mb-3 flex items-center gap-2"><i data-lucide="zap" class="w-4 h-4 text-yellow-500"></i>Popular Conversions</h3>
+            <div class="grid grid-cols-2 gap-3" id="popular-conversions"></div>
+        </div>
+    </div>
+
+    <!-- INSTALLMENTS -->
+    <div id="page-installments" class="page">
+        <div class="px-5 pt-6 pb-4">
+            <div class="flex items-center gap-3 mb-6">
+                <button onclick="goBack()" class="w-10 h-10 rounded-xl bg-white dark:bg-gray-800 shadow-sm flex items-center justify-center"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
+                <h1 class="text-xl font-bold">Installments</h1>
+            </div>
+            <div class="space-y-4" id="installments-list"></div>
+            <div class="mt-6 text-center" id="no-installments">
+                <div class="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-2xl flex items-center justify-center mx-auto mb-3"><i data-lucide="calendar-clock" class="w-8 h-8 text-gray-400"></i></div>
+                <p class="text-gray-500 text-sm">No installment plans yet</p>
+                <p class="text-xs text-gray-400 mt-1">Enable installments when splitting a bill</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAY NOW -->
+    <div id="page-paynow" class="page">
+        <div class="px-5 pt-6 pb-4">
+            <div class="flex items-center gap-3 mb-6">
+                <button onclick="goBack()" class="w-10 h-10 rounded-xl bg-white dark:bg-gray-800 shadow-sm flex items-center justify-center"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
+                <h1 class="text-xl font-bold">Pay Now</h1>
+            </div>
+            <!-- Amount -->
+            <div class="text-center mb-6">
+                <p class="text-sm text-gray-500 mb-1">Amount to pay</p>
+                <h2 class="text-4xl font-bold text-primary-500" id="pay-amount">₹0.00</h2>
+                <p class="text-sm text-gray-500 mt-1">to <span id="pay-to" class="font-medium text-gray-700 dark:text-gray-300">--</span></p>
+            </div>
+            <!-- UPI Apps -->
+            <h3 class="font-bold mb-3 flex items-center gap-2"><i data-lucide="smartphone" class="w-4 h-4 text-primary-500"></i>Choose Payment App</h3>
+            <div class="grid grid-cols-3 gap-3 mb-6">
+                <button onclick="payViaUPI('phonepe')" class="flex flex-col items-center gap-2 p-4 bg-white dark:bg-gray-800 rounded-2xl shadow-sm active:scale-95 transition-transform">
+                    <div class="upi-icon bg-purple-100 dark:bg-purple-900/30 text-purple-600"><span>Phone<br>Pe</span></div>
+                    <span class="text-xs font-medium">PhonePe</span>
+                </button>
+                <button onclick="payViaUPI('gpay')" class="flex flex-col items-center gap-2 p-4 bg-white dark:bg-gray-800 rounded-2xl shadow-sm active:scale-95 transition-transform">
+                    <div class="upi-icon bg-blue-100 dark:bg-blue-900/30 text-blue-600"><span>G<br>Pay</span></div>
+                    <span class="text-xs font-medium">Google Pay</span>
+                </button>
+                <button onclick="payViaUPI('paytm')" class="flex flex-col items-center gap-2 p-4 bg-white dark:bg-gray-800 rounded-2xl shadow-sm active:scale-95 transition-transform">
+                    <div class="upi-icon bg-sky-100 dark:bg-sky-900/30 text-sky-600"><span>Paytm</span></div>
+                    <span class="text-xs font-medium">Paytm</span>
+                </button>
+                <button onclick="payViaUPI('bhim')" class="flex flex-col items-center gap-2 p-4 bg-white dark:bg-gray-800 rounded-2xl shadow-sm active:scale-95 transition-transform">
+                    <div class="upi-icon bg-orange-100 dark:bg-orange-900/30 text-orange-600"><span>BHIM</span></div>
+                    <span class="text-xs font-medium">BHIM</span>
+                </button>
+                <button onclick="payViaUPI('whatsapp')" class="flex flex-col items-center gap-2 p-4 bg-white dark:bg-gray-800 rounded-2xl shadow-sm active:scale-95 transition-transform">
+                    <div class="upi-icon bg-green-100 dark:bg-green-900/30 text-green-600"><span>WA<br>Pay</span></div>
+                    <span class="text-xs font-medium">WhatsApp</span>
+                </button>
+                <button onclick="payViaUPI('other')" class="flex flex-col items-center gap-2 p-4 bg-white dark:bg-gray-800 rounded-2xl shadow-sm active:scale-95 transition-transform">
+                    <div class="upi-icon bg-gray-100 dark:bg-gray-700 text-gray-600"><span>UPI</span></div>
+                    <span class="text-xs font-medium">Other UPI</span>
+                </button>
+            </div>
+            <!-- Or enter UPI ID -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm">
+                <h3 class="font-bold mb-3 flex items-center gap-2"><i data-lucide="at-sign" class="w-4 h-4 text-primary-500"></i>Or pay via UPI ID</h3>
+                <input type="text" id="upi-id-input" placeholder="name@upi" class="w-full bg-gray-50 dark:bg-gray-700 rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 mb-3">
+                <button onclick="payViaUPIId()" class="w-full bg-primary-500 text-white rounded-xl py-3 font-medium text-sm active:scale-[0.98] transition-transform">Pay Now</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FRIEND DETAIL -->
+    <div id="page-friend-detail" class="page">
+        <div class="px-5 pt-6 pb-4">
+            <div class="flex items-center gap-3 mb-6">
+                <button onclick="goBack()" class="w-10 h-10 rounded-xl bg-white dark:bg-gray-800 shadow-sm flex items-center justify-center"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
+                <div>
+                    <h1 class="text-xl font-bold" id="friend-detail-name">Friend</h1>
+                    <p class="text-sm text-gray-500" id="friend-detail-status">Settle up</p>
+                </div>
+            </div>
+            <div class="text-center mb-6">
+                <div class="w-20 h-20 rounded-full overflow-hidden mx-auto mb-3">
+                    <img id="friend-detail-avatar" src="" class="w-full h-full object-cover" alt="avatar">
+                </div>
+                <p class="text-2xl font-bold" id="friend-detail-balance">₹0.00</p>
+                <p class="text-sm text-gray-500" id="friend-detail-balance-label">you owe</p>
+            </div>
+            <div class="flex gap-3 mb-6">
+                <button onclick="showPayNowForFriend()" class="flex-1 bg-primary-500 text-white rounded-xl py-3 font-medium text-sm active:scale-[0.98] transition-transform">Pay Now</button>
+                <button onclick="sendReminder()" class="flex-1 bg-gray-100 dark:bg-gray-800 rounded-xl py-3 font-medium text-sm active:scale-[0.98] transition-transform">Remind</button>
+            </div>
+            <h3 class="font-bold mb-3 flex items-center gap-2"><i data-lucide="receipt" class="w-4 h-4 text-primary-500"></i>Shared Bills</h3>
+            <div class="space-y-3" id="friend-bills"></div>
+        </div>
+    </div>
+
+    <!-- ==================== MODALS ==================== -->
+
+    <!-- Modal Overlay -->
+    <div id="modal-overlay" class="modal-overlay" onclick="closeModal()"></div>
+
+    <!-- Modal Sheet -->
+    <div id="modal-sheet" class="modal-sheet bg-white dark:bg-gray-900 rounded-t-3xl p-5">
+        <div class="w-10 h-1 bg-gray-300 dark:bg-gray-600 rounded-full mx-auto mb-4"></div>
+        <div id="modal-content"></div>
+    </div>
+
+    <!-- ==================== BOTTOM NAV ==================== -->
+    <div id="bottom-nav" class="bottom-nav glass glass-bg border-t border-gray-200/50 dark:border-gray-800/50 px-2 pb-1 pt-1 hidden">
+        <div class="flex justify-around">
+            <button onclick="navigateTo('home')" class="nav-item active flex flex-col items-center gap-0.5 py-2 px-3" data-page="home">
+                <i data-lucide="home" class="w-5 h-5"></i>
+                <span class="text-[10px] font-medium">Home</span>
+            </button>
+            <button onclick="navigateTo('bills')" class="nav-item flex flex-col items-center gap-0.5 py-2 px-3" data-page="bills">
+                <i data-lucide="receipt" class="w-5 h-5"></i>
+                <span class="text-[10px] font-medium">Bills</span>
+            </button>
+            <button onclick="navigateTo('scanner')" class="nav-item flex flex-col items-center gap-0.5 py-2 px-3" data-page="scanner">
+                <div class="w-11 h-11 bg-gradient-to-r from-primary-500 to-accent-500 rounded-2xl flex items-center justify-center -mt-4 shadow-lg shadow-primary-500/30">
+                    <i data-lucide="scan" class="w-5 h-5 text-white"></i>
+                </div>
+                <span class="text-[10px] font-medium">Scan</span>
+            </button>
+            <button onclick="navigateTo('friends')" class="nav-item flex flex-col items-center gap-0.5 py-2 px-3" data-page="friends">
+                <i data-lucide="users" class="w-5 h-5"></i>
+                <span class="text-[10px] font-medium">Friends</span>
+            </button>
+            <button onclick="navigateTo('profile')" class="nav-item flex flex-col items-center gap-0.5 py-2 px-3" data-page="profile">
+                <i data-lucide="user" class="w-5 h-5"></i>
+                <span class="text-[10px] font-medium">Profile</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- FAB -->
+    <button id="fab-btn" class="fab bg-gradient-to-r from-primary-500 to-accent-500 text-white hidden" onclick="navigateTo('scanner')">
+        <i data-lucide="plus" class="w-6 h-6 mx-auto"></i>
+    </button>
+
+    <!-- ==================== JAVASCRIPT ==================== -->
+    <script>
+        // ============ APP STATE ============
+        const APP = {
+            user: {
+                name: 'Vipul Rastogi',
+                email: 'rastogivipul148@gmail.com',
+                phone: '+91 98765 43210'
+            },
+            friends: [{
+                id: 1,
+                name: 'Priya Sharma',
+                avatar: 'http://static.photos/people/200x200/10',
+                favorite: true,
+                upiId: 'priya@upi'
+            }, {
+                id: 2,
+                name: 'Rahul Kumar',
+                avatar: 'http://static.photos/people/200x200/20',
+                favorite: true,
+                upiId: 'rahul@upi'
+            }, {
+                id: 3,
+                name: 'Sarah Wilson',
+                avatar: 'http://static.photos/people/200x200/30',
+                favorite: false,
+                upiId: 'sarah@upi'
+            }, {
+                id: 4,
+                name: 'Mike Chen',
+                avatar: 'http://static.photos/people/200x200/40',
+                favorite: true,
+                upiId: 'mike@upi'
+            }, {
+                id: 5,
+                name: 'Anita Desai',
+                avatar: 'http://static.photos/people/200x200/50',
+                favorite: false,
+                upiId: 'anita@upi'
+            }, {
+                id: 6,
+                name: 'David Lee',
+                avatar: 'http://static.photos/people/200x200/60',
+                favorite: false,
+                upiId: 'david@upi'
+            }],
+            groups: [{
+                id: 1,
+                name: 'Roommates',
+                icon: '🏠',
+                members: [1, 2, 4]
+            }, {
+                id: 2,
+                name: 'Office Lunch',
+                icon: '🍜',
+                members: [1, 3, 5, 6]
+            }, {
+                id: 3,
+                name: 'Trip Goa',
+                icon: '🏖️',
+                members: [1, 2, 3, 4, 5]
+            }],
+            bills: [{
+                id: 1,
+                title: 'Dinner at Mainland China',
+                date: '2025-01-10',
+                total: 3200,
+                items: [{
+                    name: 'Sweet Corn Soup',
+                    price: 350,
+                    qty: 2
+                }, {
+                    name: 'Fried Rice',
+                    price: 450,
+                    qty: 2
+                }, {
+                    name: 'Manchurian',
+                    price: 380,
+                    qty: 1
+                }, {
+                    name: 'Noodles',
+                    price: 420,
+                    qty: 1
+                }, {
+                    name: 'Ice Cream',
+                    price: 250,
+                    qty: 2
+                }],
+                paidBy: 1,
+                splitAmong: [1, 2, 4],
+                perPerson: 1066.67,
+                status: 'pending',
+                category: 'food'
+            }, {
+                id: 2,
+                title: 'Uber to Airport',
+                date: '2025-01-08',
+                total: 850,
+                items: [{
+                    name: 'Uber Ride',
+                    price: 850,
+                    qty: 1
+                }],
+                paidBy: 2,
+                splitAmong: [1, 2, 3],
+                perPerson: 283.33,
+                status: 'pending',
+                category: 'travel'
+            }, {
+                id: 3,
+                title: 'Netflix Subscription',
+                date: '2025-01-05',
+                total: 649,
+                items: [{
+                    name: 'Netflix Premium',
+                    price: 649,
+                    qty: 1
+                }],
+                paidBy: 4,
+                splitAmong: [1, 2, 3, 4],
+                perPerson: 162.25,
+                status: 'settled',
+                category: 'entertainment'
+            }, {
+                id: 4,
+                title: 'Grocery Shopping',
+                date: '2025-01-02',
+                total: 2150,
+                items: [{
+                    name: 'Vegetables',
+                    price: 450,
+                    qty: 1
+                }, {
+                    name: 'Fruits',
+                    price: 380,
+                    qty: 1
+                }, {
+                    name: 'Dairy',
+                    price: 520,
+                    qty: 1
+                }, {
+                    name: 'Snacks',
+                    price: 800,
+                    qty: 1
+                }],
+                paidBy: 1,
+                splitAmong: [1, 2, 4],
+                perPerson: 716.67,
+                status: 'pending',
+                category: 'grocery'
+            }, {
+                id: 5,
+                title: 'Coffee Shop',
+                date: '2024-12-28',
+                total: 480,
+                items: [{
+                    name: 'Cappuccino',
+                    price: 180,
+                    qty: 2
+                }, {
+                    name: 'Croissant',
+                    price: 120,
+                    qty: 1
+                }],
+                paidBy: 3,
+                splitAmong: [1, 3],
+                perPerson: 240,
+                status: 'pending',
+                category: 'food'
+            }],
+            installments: [],
+            currentBill: null,
+            settings: {
+                darkMode: false,
+                appLock: false,
+                pin: '',
+                currency: 'INR'
+            },
+            monthlySpending: [1200, 2800, 1500, 3200, 2100, 1800],
+            spendingLabels: ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+        };
+
+        // Currency rates (approximate)
+        const RATES = {
+            INR: 1,
+            USD: 0.012,
+            EUR: 0.011,
+            GBP: 0.0095,
+            JPY: 1.85,
+            AUD: 0.019,
+            CAD: 0.017,
+            SGD: 0.016,
+            AED: 0.044,
+            CNY: 0.087
+        };
+        const SYMBOLS = {
+            INR: '₹',
+            USD: '$',
+            EUR: '€',
+            GBP: '£',
+            JPY: '¥',
+            AUD: 'A$',
+            CAD: 'C$',
+            SGD: 'S$',
+            AED: 'د.إ',
+            CNY: '¥'
+        };
+
+        let navHistory = ['login'];
+        let currentPin = '';
+        let currentPayFriend = null;
+
+        // ============ NAVIGATION ============
+        function navigateTo(page, skipHistory = false) {
+            const currentPage = document.querySelector('.page.active');
+            if (currentPage) {
+                currentPage.classList.add('slide-out');
+                setTimeout(() => {
+                    currentPage.classList.remove('active', 'slide-out');
+                }, 100);
+            }
+
+            if (!skipHistory) navHistory.push(page);
+
+            setTimeout(() => {
+                const newPage = document.getElementById('page-' + page);
+                if (newPage) {
+                    newPage.classList.add('active');
+                    newPage.scrollTop = 0;
+                }
+            }, 50);
+
+            // Bottom nav
+            const bottomNav = document.getElementById('bottom-nav');
+            const fabBtn = document.getElementById('fab-btn');
+            const authPages = ['login'];
+            if (authPages.includes(page)) {
+                bottomNav.classList.add('hidden');
+                fabBtn.classList.add('hidden');
+            } else {
+                bottomNav.classList.remove('hidden');
+                fabBtn.classList.remove('hidden');
+            }
+
+            // Update nav active
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.toggle('active', item.dataset.page === page);
+            });
+
+            // Page-specific logic
+            if (page === 'home') renderHome();
+            if (page === 'bills') renderBills();
+            if (page === 'friends') renderFriends();
+            if (page === 'groups') renderGroups();
+            if (page === 'currency') convertCurrency();
+            if (page === 'installments') renderInstallments();
+            if (page === 'profile') renderProfile();
+
+            lucide.createIcons();
+        }
+
+        function goBack() {
+            navHistory.pop();
+            const prevPage = navHistory[navHistory.length - 1] || 'home';
+            navigateTo(prevPage, true);
+        }
+
+        // ============ SPLASH & AUTH ============
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.getElementById('splash').classList.add('hide');
+                setTimeout(() => {
+                    document.getElementById('splash').style.display = 'none';
+                }, 500);
+                lucide.createIcons();
+            }, 2000);
+        });
+
+        function loginWith(method) {
+            showToast('Signed in with ' + method.charAt(0).toUpperCase() + method.slice(1));
+            navigateTo('home');
+        }
+
+        function showLoginEmail() {
+            document.getElementById('email-login-form').style.display = 'block';
+            document.getElementById('phone-login-form').style.display = 'none';
+        }
+
+        function loginWithEmail() {
+            const email = document.getElementById('login-email').value;
+            if (email) {
+                showToast('Signed in successfully!');
+                navigateTo('home');
+            }
+        }
+
+        function loginWithPhone() {
+            showToast('Phone verified successfully!');
+            navigateTo('home');
+        }
+
+        function sendOTP() {
+            showToast('OTP sent!');
+        }
+
+        function loginWith(method) {
+            if (method === 'phone') {
+                document.getElementById('phone-login-form').style.display = 'block';
+                document.getElementById('email-login-form').style.display = 'none';
+                return;
+            }
+            showToast('Signed in with ' + method.charAt(0).toUpperCase() + method.slice(1));
+            navigateTo('home');
+        }
+
+        function logout() {
+            navHistory = ['login'];
+            navigateTo('login', true);
+            showToast('Logged out');
+        }
+
+        // ============ HOME RENDER ============
+        function renderHome() {
+            let owed = 0,
+                owe = 0;
+            APP.bills.forEach(b => {
+                if (b.status === 'settled') return;
+                const isPayer = b.paidBy === 1;
+                if (isPayer) {
+                    owed += b.total - b.perPerson;
+                } else {
+                    owe += b.perPerson;
+                }
+            });
+
+            document.getElementById('total-balance').textContent = formatCurrency(owed - owe);
+            document.getElementById('owed-amount').textContent = formatCurrency(owed);
+            document.getElementById('owe-amount').textContent = formatCurrency(owe);
+            document.getElementById('user-greeting').textContent = 'Vipul Rastogi';
+
+            // Time-based greeting
+            const greetingEl = document.getElementById('time-greeting');
+            if (greetingEl) {
+                const hour = new Date().getHours();
+                let greetMsg;
+                if (hour >= 5 && hour < 12) {
+                    greetMsg = 'Good Morning ☀️';
+                } else if (hour >= 12 && hour < 17) {
+                    greetMsg = 'Good Afternoon 🌤️';
+                } else if (hour >= 17 && hour < 21) {
+                    greetMsg = 'Good Evening 🌆';
+                } else {
+                    greetMsg = 'Good Night 🌙';
+                }
+                greetingEl.textContent = greetMsg;
+            }
+
+            // Spending chart
+            const chart = document.getElementById('spending-chart');
+            const labels = document.getElementById('spending-labels');
+            const maxSpend = Math.max(...APP.monthlySpending);
+            const isDark = document.documentElement.classList.contains('dark');
+            chart.innerHTML = APP.monthlySpending.map((v, i) =>
+                `<div class="flex-1 flex flex-col items-center gap-1">
+                <div class="w-full rounded-t-lg transition-all duration-500" style="height:${Math.max(8, (v/maxSpend)*80)}px; background: linear-gradient(180deg, ${i===5?'#6366f1':(isDark?'#3730a3':'#c7d2fe')}, ${i===5?'#d946ef':(isDark?'#581c87':'#e0e7ff')})"></div>
+            </div>`
+            ).join('');
+            labels.innerHTML = APP.spendingLabels.map(l => `<span class="text-gray-400 dark:text-gray-500">${l}</span>`).join('');
+
+            // Recent activity
+            const recent = document.getElementById('recent-activity');
+            recent.innerHTML = APP.bills.slice(0, 4).map(bill => {
+                const friend = APP.friends.find(f => f.id === bill.paidBy);
+                const isPayer = bill.paidBy === 1;
+                return `<div class="bg-white dark:bg-gray-800 rounded-xl p-3.5 shadow-sm flex items-center gap-3 card-hover cursor-pointer" onclick="navigateTo('bills')">
+                <div class="w-10 h-10 rounded-xl ${isPayer ? 'bg-success-100 dark:bg-success-900/20' : 'bg-danger-50 dark:bg-danger-900/20'} flex items-center justify-center shrink-0">
+                    <i data-lucide="${isPayer ? 'arrow-down-left' : 'arrow-up-right'}" class="w-5 h-5 ${isPayer ? 'text-success-500' : 'text-danger-500'}"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="font-medium text-sm truncate">${bill.title}</p>
+                    <p class="text-xs text-gray-500">${formatDate(bill.date)}</p>
+                </div>
+                <div class="text-right shrink-0">
+                    <p class="font-semibold text-sm ${isPayer ? 'text-success-500' : 'text-danger-500'}">${isPayer ? '+' : '-'}${formatCurrency(isPayer ? bill.total - bill.perPerson : bill.perPerson)}</p>
+                    <p class="text-xs text-gray-400">${bill.status}</p>
+                </div>
+            </div>`;
+            }).join('');
+
+            lucide.createIcons();
+        }
+
+        // ============ BILL SCANNER ============
+        function handleBillUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById('bill-preview').src = e.target.result;
+                document.getElementById('upload-area').classList.add('hidden');
+                document.getElementById('scanning-area').classList.remove('hidden');
+
+                // Simulate AI scanning
+                setTimeout(() => {
+                    document.getElementById('scanning-area').classList.add('hidden');
+                    document.getElementById('bill-result').classList.remove('hidden');
+                    simulateBillResult();
+                }, 3000);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function simulateBillResult() {
+            // Mock AI result
+            const mockBill = {
+                items: [{
+                    name: 'Paneer Butter Masala',
+                    price: 380,
+                    qty: 1
+                }, {
+                    name: 'Dal Makhani',
+                    price: 320,
+                    qty: 1
+                }, {
+                    name: 'Butter Naan',
+                    price: 60,
+                    qty: 4
+                }, {
+                    name: 'Biryani',
+                    price: 350,
+                    qty: 2
+                }, {
+                    name: 'Gulab Jamun',
+                    price: 180,
+                    qty: 1
+                }, {
+                    name: 'Mineral Water',
+                    price: 40,
+                    qty: 3
+                }],
+                total: 1730
+            };
+
+            APP.currentBill = mockBill;
+
+            // Render items
+            const itemsList = document.getElementById('bill-items-list');
+            itemsList.innerHTML = mockBill.items.map((item, i) =>
+                `<div class="flex justify-between text-sm" data-item="${i}">
+                <div class="flex items-center gap-2">
+                    <span class="text-gray-500">${item.name}</span>
+                    <span class="text-xs text-gray-400">x${item.qty}</span>
+                </div>
+                <span class="font-medium">${formatCurrency(item.price * item.qty)}</span>
+            </div>`
+            ).join('');
+
+            document.getElementById('bill-total').textContent = formatCurrency(mockBill.total);
+
+            // Payer selection
+            const payerList = document.getElementById('payer-list');
+            payerList.innerHTML = `<button onclick="selectPayer(1)" class="px-3 py-2 rounded-xl border-2 border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-600 text-sm font-medium" data-payer="1">You paid</button>` +
+                APP.friends.slice(0, 4).map(f =>
+                    `<button onclick="selectPayer(${f.id})" class="px-3 py-2 rounded-xl border-2 border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:border-primary-300 transition-colors" data-payer="${f.id}">${f.name.split(' ')[0]}</button>`
+                ).join('');
+
+            // Split members
+            renderSplitMembers();
+
+            lucide.createIcons();
+        }
+
+        function selectPayer(id) {
+            document.querySelectorAll('#payer-list button').forEach(btn => {
+                btn.classList.remove('border-primary-500', 'bg-primary-50', 'dark:bg-primary-900/20', 'text-primary-600');
+                btn.classList.add('border-gray-200', 'dark:border-gray-700');
+            });
+            const selected = document.querySelector(`#payer-list button[data-payer="${id}"]`);
+            selected.classList.add('border-primary-500', 'bg-primary-50', 'dark:bg-primary-900/20', 'text-primary-600');
+            selected.classList.remove('border-gray-200', 'dark:border-gray-700');
+            APP.currentBill.paidBy = id;
+        }
+
+        function renderSplitMembers() {
+            const members = [1, ...APP.friends.slice(0, 3).map(f => f.id)];
+            APP.currentBill.splitAmong = members;
+            const perPerson = APP.currentBill.total / members.length;
+
+            const list = document.getElementById('split-members-list');
+            list.innerHTML = [{
+                id: 1,
+                name: 'You',
+                avatar: 'http://static.photos/people/200x200/1'
+            }, ...APP.friends.slice(0, 3)].map(f =>
+                `<div class="flex items-center gap-3">
+                <img src="${f.avatar}" class="w-8 h-8 rounded-full object-cover" alt="${f.name}">
+                <span class="flex-1 text-sm font-medium">${f.id === 1 ? 'You' : f.name}</span>
+                <span class="text-sm text-primary-500 font-medium">${formatCurrency(perPerson)}</span>
+            </div>`
+            ).join('');
+
+            document.getElementById('per-person-amount').textContent = formatCurrency(perPerson);
+        }
+
+        function saveBillSplit() {
+            if (!APP.currentBill) return;
+            const newBill = {
+                id: APP.bills.length + 1,
+                title: 'Scanned Bill',
+                date: new Date().toISOString().split('T')[0],
+                total: APP.currentBill.total,
+                items: APP.currentBill.items,
+                paidBy: APP.currentBill.paidBy || 1,
+                splitAmong: APP.currentBill.splitAmong,
+                perPerson: APP.currentBill.total / APP.currentBill.splitAmong.length,
+                status: 'pending',
+                category: 'food'
+            };
+            APP.bills.unshift(newBill);
+            APP.monthlySpending[APP.monthlySpending.length - 1] += newBill.total;
+            showToast('Bill saved & split successfully!');
+            navigateTo('home');
+
+            // Reset scanner
+            document.getElementById('upload-area').classList.remove('hidden');
+            document.getElementById('bill-result').classList.add('hidden');
+            document.getElementById('scanning-area').classList.add('hidden');
+        }
+
+        // ============ BILLS ============
+        function renderBills(filter = 'all') {
+            const list = document.getElementById('bills-list');
+            let filtered = APP.bills;
+            if (filter === 'owed') filtered = APP.bills.filter(b => b.paidBy === 1 && b.status !== 'settled');
+            if (filter === 'owe') filtered = APP.bills.filter(b => b.paidBy !== 1 && b.status !== 'settled');
+            if (filter === 'settled') filtered = APP.bills.filter(b => b.status === 'settled');
+
+            list.innerHTML = filtered.map(bill => {
+                const friend = APP.friends.find(f => f.id === bill.paidBy);
+                const isPayer = bill.paidBy === 1;
+                const catIcon = {
+                    food: 'utensils',
+                    travel: 'car',
+                    entertainment: 'tv',
+                    grocery: 'shopping-cart'
+                }[bill.category] || 'receipt';
+                return `<div class="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm card-hover cursor-pointer" onclick="viewBillDetail(${bill.id})">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-xl ${isPayer ? 'bg-success-50 dark:bg-success-900/20' : 'bg-danger-50 dark:bg-danger-900/20'} flex items-center justify-center shrink-0">
+                        <i data-lucide="${catIcon}" class="w-6 h-6 ${isPayer ? 'text-success-500' : 'text-danger-500'}"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="font-semibold text-sm truncate">${bill.title}</p>
+                        <p class="text-xs text-gray-500">${formatDate(bill.date)} · ${bill.splitAmong.length} people</p>
+                    </div>
+                    <div class="text-right shrink-0">
+                        <p class="font-bold text-sm">${formatCurrency(bill.total)}</p>
+                        <span class="text-[10px] px-2 py-0.5 rounded-full ${bill.status === 'settled' ? 'bg-success-100 dark:bg-success-900/30 text-success-600' : 'bg-warning-100 dark:bg-warning-900/30 text-warning-600'} font-medium">${bill.status}</span>
+                    </div>
+                </div>
+            </div>`;
+            }).join('');
+
+            // Filter buttons
+            document.querySelectorAll('.bill-filter').forEach(btn => {
+                btn.onclick = () => {
+                    document.querySelectorAll('.bill-filter').forEach(b => {
+                        b.classList.remove('bg-primary-500', 'text-white');
+                        b.classList.add('bg-gray-100', 'dark:bg-gray-800');
+                    });
+                    btn.classList.add('bg-primary-500', 'text-white');
+                    btn.classList.remove('bg-gray-100', 'dark:bg-gray-800');
+                    renderBills(btn.dataset.filter);
+                };
+            });
+
+            lucide.createIcons();
+        }
+
+        function viewBillDetail(id) {
+            const bill = APP.bills.find(b => b.id === id);
+            if (!bill) return;
+
+            const payerName = bill.paidBy === 1 ? 'You' : APP.friends.find(f => f.id === bill.paidBy)?.name || 'Unknown';
+
+            openModal(`
+            <h3 class="font-bold text-lg mb-1">${bill.title}</h3>
+            <p class="text-sm text-gray-500 mb-4">${formatDate(bill.date)}</p>
+            <div class="space-y-2 mb-4">${bill.items.map(item =>
+                `<div class="flex justify-between text-sm"><span class="text-gray-500">${item.name} x${item.qty}</span><span class="font-medium">${formatCurrency(item.price * item.qty)}</span></div>`
+            ).join('')}</div>
+            <div class="border-t border-gray-100 dark:border-gray-700 pt-3 mb-4">
+                <div class="flex justify-between font-bold"><span>Total</span><span class="text-primary-500">${formatCurrency(bill.total)}</span></div>
+                <div class="flex justify-between text-sm mt-1"><span class="text-gray-500">Paid by</span><span>${payerName}</span></div>
+                <div class="flex justify-between text-sm"><span class="text-gray-500">Per person</span><span>${formatCurrency(bill.perPerson)}</span></div>
+            </div>
+            ${bill.status !== 'settled' ? `<div class="flex gap-2">
+                <button onclick="settleBill(${bill.id})" class="flex-1 bg-success-500 text-white rounded-xl py-3 font-medium text-sm active:scale-[0.98] transition-transform">Settle Up</button>
+                <button onclick="enableInstallment(${bill.id})" class="flex-1 bg-primary-500 text-white rounded-xl py-3 font-medium text-sm active:scale-[0.98] transition-transform">Installment</button>
+            </div>` : '<p class="text-center text-success-500 font-medium">✓ Settled</p>'}
+        `);
+    }
+
+    function settleBill(id) {
+        const bill = APP.bills.find(b => b.id === id);
+        if (bill) {
+            bill.status = 'settled';
+            closeModal();
+            renderBills();
+            showToast('Bill settled! 🎉');
+        }
+    }
+
+    function enableInstallment(id) {
+        const bill = APP.bills.find(b => b.id === id);
+        if (!bill) return;
+        closeModal();
+
+        openModal(`
+            <h3 class="font-bold text-lg mb-3">Set Up Installments</h3>
+            <p class="text-sm text-gray-500 mb-3">For: ${bill.title} (${formatCurrency(bill.perPerson)})</p>
+            <div class="mb-3">
+                <label class="text-sm text-gray-500 block mb-1">Number of payments</label>
+                <select id="installment-count" class="w-full bg-gray-50 dark:bg-gray-700 rounded-xl py-2.5 px-4 text-sm">
+                    <option value="2">2 payments</option>
+                    <option value="3">3 payments</option>
+                    <option value="4">4 payments</option>
+                    <option value="6">6 payments</option>
+                </select>
+            </div>
+            <button onclick="createInstallment(${bill.id})" class="w-full bg-primary-500 text-white rounded-xl py-3 font-medium text-sm active:scale-[0.98] transition-transform">Create Installment Plan</button>
+        `);
+    }
+
+    function createInstallment(billId) {
+        const bill = APP.bills.find(b => b.id === billId);
+        const count = parseInt(document.getElementById('installment-count').value);
+        const perInstallment = bill.perPerson / count;
+
+        APP.installments.push({
+            id: Date.now(),
+            billId,
+            title: bill.title,
+            totalAmount: bill.perPerson,
+            installmentCount: count,
+            perInstallment: perInstallment,
+            paid: 0,
+            payments: [],
+            createdAt: new Date().toISOString().split('T')[0]
+        });
+
+        closeModal();
+        showToast('Installment plan created!');
+        navigateTo('installments');
+    }
+
+    // ============ FRIENDS ============
+    function renderFriends() {
+        const search = document.getElementById('friend-search')?.value?.toLowerCase() || '';
+
+        // Favorites
+        const favs = APP.friends.filter(f => f.favorite);
+        document.getElementById('favorite-friends').innerHTML = favs.map(f =>
+            `<button onclick="viewFriendDetail(${f.id})" class="flex flex-col items-center gap-1 shrink-0">
+                <div class="w-14 h-14 rounded-full overflow-hidden ring-2 ring-primary-200 dark:ring-primary-800"><img src="${f.avatar}" class="w-full h-full object-cover" alt="${f.name}"></div>
+                <span class="text-xs font-medium">${f.name.split(' ')[0]}</span>
+            </button>`
+        ).join('');
+
+        // All friends
+        const filtered = APP.friends.filter(f => f.name.toLowerCase().includes(search));
+        document.getElementById('all-friends-list').innerHTML = filtered.map(f => {
+            let balance = 0;
+            APP.bills.forEach(b => {
+                if (b.status === 'settled') return;
+                if (b.paidBy === 1 && b.splitAmong.includes(f.id)) balance += b.perPerson;
+                if (b.paidBy === f.id && b.splitAmong.includes(1)) balance -= b.perPerson;
+            });
+            return `<div class="bg-white dark:bg-gray-800 rounded-xl p-3 shadow-sm flex items-center gap-3 cursor-pointer card-hover" onclick="viewFriendDetail(${f.id})">
+                <img src="${f.avatar}" class="w-10 h-10 rounded-full object-cover" alt="${f.name}">
+                <div class="flex-1 min-w-0">
+                    <p class="font-medium text-sm">${f.name}</p>
+                    <p class="text-xs ${balance > 0 ? 'text-success-500' : balance < 0 ? 'text-danger-500' : 'text-gray-400'}">${balance > 0 ? 'owes you ' + formatCurrency(balance) : balance < 0 ? 'you owe ' + formatCurrency(Math.abs(balance)) : 'settled up'}</p>
+                </div>
+                <i data-lucide="chevron-right" class="w-4 h-4 text-gray-400"></i>
+            </div>`;
+        }).join('');
+
+        lucide.createIcons();
+    }
+
+    function filterFriends() { renderFriends(); }
+
+    function viewFriendDetail(id) {
+        const friend = APP.friends.find(f => f.id === id);
+        if (!friend) return;
+        currentPayFriend = friend;
+
+        let balance = 0;
+        APP.bills.forEach(b => {
+            if (b.status === 'settled') return;
+            if (b.paidBy === 1 && b.splitAmong.includes(id)) balance += b.perPerson;
+            if (b.paidBy === id && b.splitAmong.includes(1)) balance -= b.perPerson;
+        });
+
+        document.getElementById('friend-detail-name').textContent = friend.name;
+        document.getElementById('friend-detail-avatar').src = friend.avatar;
+        document.getElementById('friend-detail-balance').textContent = formatCurrency(Math.abs(balance));
+        document.getElementById('friend-detail-balance-label').textContent = balance > 0 ? 'owes you' : balance < 0 ? 'you owe' : 'settled up';
+
+        // Friend's shared bills
+        const friendBills = APP.bills.filter(b => b.splitAmong.includes(id) || b.paidBy === id);
+        document.getElementById('friend-bills').innerHTML = friendBills.map(bill => {
+            const isPayer = bill.paidBy === 1;
+            return `<div class="bg-white dark:bg-gray-800 rounded-xl p-3 shadow-sm flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg ${isPayer ? 'bg-success-50 dark:bg-success-900/20' : 'bg-danger-50 dark:bg-danger-900/20'} flex items-center justify-center shrink-0">
+                    <i data-lucide="${isPayer ? 'arrow-down-left' : 'arrow-up-right'}" class="w-5 h-5 ${isPayer ? 'text-success-500' : 'text-danger-500'}"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="font-medium text-sm truncate">${bill.title}</p>
+                    <p class="text-xs text-gray-500">${formatDate(bill.date)}</p>
+                </div>
+                <span class="font-semibold text-sm ${isPayer ? 'text-success-500' : 'text-danger-500'}">${isPayer ? '+' : '-'}${formatCurrency(bill.perPerson)}</span>
+            </div>`;
+        }).join('') || '<p class="text-center text-gray-400 text-sm py-4">No shared bills yet</p>';
+
+        navigateTo('friend-detail');
+        lucide.createIcons();
+    }
+
+    function showPayNowForFriend() {
+        if (!currentPayFriend) return;
+        let balance = 0;
+        APP.bills.forEach(b => {
+            if (b.status === 'settled') return;
+            if (b.paidBy === currentPayFriend.id && b.splitAmong.includes(1)) balance += b.perPerson;
+        });
+        document.getElementById('pay-amount').textContent = formatCurrency(balance || 0);
+        document.getElementById('pay-to').textContent = currentPayFriend.name;
+        navigateTo('paynow');
+    }
+
+    function sendReminder() {
+        if (currentPayFriend) showToast('Reminder sent to ' + currentPayFriend.name + ' 📩');
+    }
+
+    // ============ GROUPS ============
+    function renderGroups() {
+        document.getElementById('groups-list').innerHTML = APP.groups.map(g => {
+            const memberAvatars = g.members.slice(0, 3).map(mid => {
+                const f = APP.friends.find(fr => fr.id === mid);
+                return f ? `<img src="${f.avatar}" class="w-7 h-7 rounded-full border-2 border-white dark:border-gray-900 -ml-2 first:ml-0 object-cover" alt="">` : '';
+            }).join('');
+            return `<div class="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm card-hover cursor-pointer" onclick="viewGroupDetail(${g.id})">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center text-2xl shrink-0">${g.icon}</div>
+                    <div class="flex-1 min-w-0">
+                        <p class="font-semibold">${g.name}</p>
+                        <p class="text-xs text-gray-500">${g.members.length} members</p>
+                    </div>
+                    <div class="flex items-center">${memberAvatars}</div>
+                </div>
+            </div>`;
+        }).join('');
+
+        lucide.createIcons();
+    }
+
+    function viewGroupDetail(id) {
+        const group = APP.groups.find(g => g.id === id);
+        if (!group) return;
+
+        document.getElementById('group-detail-name').textContent = group.icon + ' ' + group.name;
+        document.getElementById('group-detail-members').textContent = group.members.length + ' members';
+
+        // Balances
+        const balances = document.getElementById('group-balances');
+        balances.innerHTML = group.members.map(mid => {
+            const f = mid === 1 ? { name: 'You', avatar: 'http://static.photos/people/200x200/1' } : APP.friends.find(fr => fr.id === mid);
+            let bal = 0;
+            APP.bills.forEach(b => {
+                if (b.status === 'settled') return;
+                if (b.paidBy === mid && b.splitAmong.includes(1)) bal -= b.perPerson;
+                if (b.paidBy === 1 && b.splitAmong.includes(mid)) bal += b.perPerson;
+            });
+            return `<div class="flex items-center gap-3 py-2">
+                <img src="${f.avatar}" class="w-8 h-8 rounded-full object-cover" alt="">
+                <span class="flex-1 text-sm font-medium">${f.name}</span>
+                <span class="text-sm font-semibold ${bal > 0 ? 'text-success-500' : bal < 0 ? 'text-danger-500' : 'text-gray-400'}">${bal > 0 ? '+' : ''}${formatCurrency(bal)}</span>
+            </div>`;
+        }).join('');
+
+        // Group bills
+        const groupBills = APP.bills.filter(b => b.splitAmong.some(mid => group.members.includes(mid)));
+        document.getElementById('group-bills').innerHTML = groupBills.slice(0, 3).map(b =>
+            `<div class="bg-white dark:bg-gray-800 rounded-xl p-3 shadow-sm flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center"><i data-lucide="receipt" class="w-5 h-5 text-primary-500"></i></div>
+                <div class="flex-1 min-w-0"><p class="font-medium text-sm truncate">${b.title}</p><p class="text-xs text-gray-500">${formatDate(bill.date)}</p></div>
+                <span class="font-semibold text-sm">${formatCurrency(b.total)}</span>
+            </div>`
+        ).join('') || '<p class="text-gray-400 text-sm text-center py-4">No bills yet</p>';
+
+        navigateTo('group-detail');
+        lucide.createIcons();
+    }
+
+    // ============ CURRENCY ============
+    function convertCurrency() {
+        const from = document.getElementById('currency-from')?.value || 'INR';
+        const to = document.getElementById('currency-to')?.value || 'USD';
+        const amount = parseFloat(document.getElementById('currency-amount')?.value || 0);
+
+        const inrAmount = amount / RATES[from];
+        const result = inrAmount * RATES[to];
+
+        document.getElementById('currency-result').textContent = SYMBOLS[to] + result.toFixed(2);
+        document.getElementById('currency-rate').textContent = `1 ${from} = ${(RATES[to] / RATES[from]).toFixed(4)} ${to}`;
+
+        // Popular conversions
+        const popular = document.getElementById('popular-conversions');
+        const amounts = [100, 500, 1000, 5000];
+        popular.innerHTML = amounts.map(a => {
+            const r = (a / RATES[from]) * RATES[to];
+            return `<div class="bg-white dark:bg-gray-800 rounded-xl p-3 shadow-sm flex items-center gap-2">
+                <div class="w-8 h-8 bg-primary-50 dark:bg-primary-900/20 rounded-lg flex items-center justify-center shrink-0"><i data-lucide="arrow-right-left" class="w-4 h-4 text-primary-500"></i></div>
+                <div>
+                    <p class="text-sm font-medium">${SYMBOLS[from]}${a.toLocaleString()}</p>
+                    <p class="text-xs text-gray-500">= ${SYMBOLS[to]}${r.toFixed(2)}</p>
+                </div>
+            </div>`;
+        }).join('');
+        lucide.createIcons();
+    }
+
+    function swapCurrencies() {
+        const from = document.getElementById('currency-from');
+        const to = document.getElementById('currency-to');
+        const temp = from.value;
+        from.value = to.value;
+        to.value = temp;
+        convertCurrency();
+    }
+
+    // ============ INSTALLMENTS ============
+    function renderInstallments() {
+        const list = document.getElementById('installments-list');
+        const noInst = document.getElementById('no-installments');
+
+        if (APP.installments.length === 0) {
+            list.innerHTML = '';
+            noInst.classList.remove('hidden');
+            lucide.createIcons();
+            return;
+        }
+        noInst.classList.add('hidden');
+
+        list.innerHTML = APP.installments.map(inst => {
+            const progress = inst.paid / inst.totalAmount * 100;
+            const remaining = inst.totalAmount - inst.paid;
+            const nextPayment = inst.perInstallment;
+            return `<div class="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm">
+                <div class="flex items-center justify-between mb-3">
+                    <div>
+                        <h3 class="font-bold">${inst.title}</h3>
+                        <p class="text-xs text-gray-500">${inst.installmentCount} payments · ${formatCurrency(inst.perInstallment)} each</p>
+                    </div>
+                    <span class="bg-primary-100 dark:bg-primary-900/30 text-primary-600 text-xs font-semibold px-2.5 py-1 rounded-full">${inst.paid < inst.totalAmount ? 'Active' : 'Complete'}</span>
+                </div>
+                <div class="mb-3">
+                    <div class="flex justify-between text-sm mb-1">
+                        <span class="text-gray-500">Progress</span>
+                        <span class="font-medium">${formatCurrency(inst.paid)} / ${formatCurrency(inst.totalAmount)}</span>
+                    </div>
+                    <div class="h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                        <div class="h-full bg-gradient-to-r from-primary-500 to-accent-500 rounded-full transition-all" style="width:${progress}%"></div>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-500">Remaining: ${formatCurrency(remaining)}</span>
+                    ${remaining > 0 ? `<button onclick="payInstallment(${inst.id})" class="bg-primary-500 text-white text-sm px-4 py-2 rounded-xl font-medium active:scale-95 transition-transform">Pay ${formatCurrency(nextPayment)}</button>` : '<span class="text-success-500 text-sm font-medium">✓ Complete</span>'}
+                </div>
+                ${inst.payments.length > 0 ? `<div class="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700 space-y-1">${inst.payments.map(p =>
+                    `<div class="flex justify-between text-xs"><span class="text-gray-500">${formatDate(p.date)}</span><span class="text-success-500">-${formatCurrency(p.amount)}</span></div>`
+                ).join('')}</div>` : ''}
+            </div>`;
+        }).join('');
+
+        lucide.createIcons();
+    }
+
+    function payInstallment(instId) {
+        const inst = APP.installments.find(i => i.id === instId);
+        if (!inst) return;
+
+        const remaining = inst.totalAmount - inst.paid;
+        const amount = Math.min(inst.perInstallment, remaining);
+
+        inst.paid += amount;
+        inst.payments.push({ date: new Date().toISOString().split('T')[0], amount });
+
+        // Update bill
+        if (inst.paid >= inst.totalAmount) {
+            const bill = APP.bills.find(b => b.id === inst.billId);
+            if (bill) bill.status = 'settled';
+            showToast('Installment fully paid! 🎉');
+        } else {
+            showToast(`Payment of ${formatCurrency(amount)} recorded!`);
+        }
+
+        renderInstallments();
+    }
+
+    // ============ PAY NOW ============
+    function payViaUPI(app) {
+        const amount = document.getElementById('pay-amount').textContent;
+        const to = document.getElementById('pay-to').textContent;
+
+        // Try to open UPI app (will work on mobile)
+        const upiLinks = {
+            phonepe: 'phonepe://',
+            gpay: 'gpay://',
+            paytm: 'paytm://',
+            bhim: 'bhim://pay?',
+            whatsapp: 'whatsapp://send?text=Payment',
+            other: 'upi://pay?'
+        };
+
+        const upiId = currentPayFriend?.upiId || 'merchant@upi';
+        const amountNum = parseFloat(amount.replace(/[^\d.]/g, '')) || 0;
+        const link = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(to)}&am=${amountNum}&cu=INR`;
+
+        try {
+            window.location.href = link;
+        } catch(e) {}
+
+        showToast(`Opening ${app === 'gpay' ? 'Google Pay' : app === 'phonepe' ? 'PhonePe' : app.charAt(0).toUpperCase() + app.slice(1)} for payment...`);
+    }
+
+    function payViaUPIId() {
+        const upiId = document.getElementById('upi-id-input').value;
+        if (!upiId) { showToast('Please enter a UPI ID'); return; }
+        const amount = document.getElementById('pay-amount').textContent;
+        const amountNum = parseFloat(amount.replace(/[^\d.]/g, '')) || 0;
+        const link = `upi://pay?pa=${upiId}&am=${amountNum}&cu=INR`;
+        try { window.location.href = link; } catch(e) {}
+        showToast('Redirecting to payment...');
+    }
+
+    // ============ PROFILE ============
+    function renderProfile() {
+        document.getElementById('profile-name').textContent = APP.user.name;
+        document.getElementById('profile-email').textContent = APP.user.email;
+        document.getElementById('stat-bills').textContent = APP.bills.length;
+        document.getElementById('stat-friends').textContent = APP.friends.length;
+        document.getElementById('stat-groups').textContent = APP.groups.length;
+    }
+
+    // ============ SETTINGS ============
+    function toggleDarkMode() {
+        const toggle = document.getElementById('dark-toggle');
+        toggle.classList.toggle('on');
+        toggle.classList.toggle('off');
+        APP.settings.darkMode = toggle.classList.contains('on');
+
+        if (APP.settings.darkMode) {
+            document.documentElement.classList.add('dark');
+            document.body.classList.add('bg-gray-950', 'text-gray-100');
+            document.body.classList.remove('bg-gray-50', 'text-gray-900');
+        } else {
+            document.documentElement.classList.remove('dark');
+            document.body.classList.remove('bg-gray-950', 'text-gray-100');
+            document.body.classList.add('bg-gray-50', 'text-gray-900');
+        }
+        // Re-render home to update chart colors
+        if (document.getElementById('page-home').classList.contains('active')) {
+            renderHome();
+        }
+    }
+
+    function toggleAppLock() {
+        const toggle = document.getElementById('lock-toggle');
+        toggle.classList.toggle('on');
+        toggle.classList.toggle('off');
+        APP.settings.appLock = toggle.classList.contains('on');
+
+        if (APP.settings.appLock) {
+            document.getElementById('set-pin-section').classList.remove('hidden');
+        } else {
+            document.getElementById('set-pin-section').classList.add('hidden');
+            document.getElementById('lock-screen').style.display = 'none';
+        }
+    }
+
+    function pinInput(el, idx) {
+        const inputs = document.querySelectorAll('.pin-input');
+        if (el.value && idx < 3) inputs[idx + 1].focus();
+    }
+
+    function savePin() {
+        const inputs = document.querySelectorAll('.pin-input');
+        const pin = Array.from(inputs).map(i => i.value).join('');
+        if (pin.length === 4) {
+            APP.settings.pin = pin;
+            showToast('PIN saved successfully! 🔐');
+        } else {
+            showToast('Please enter 4 digits');
+        }
+    }
+
+    // ============ APP LOCK ============
+    function enterPin(val) {
+        const dots = document.querySelectorAll('#pin-dots .pin-dot');
+
+        if (val === 'del') {
+            currentPin = currentPin.slice(0, -1);
+        } else if (val === 'bio') {
+            // Try biometric
+            if (navigator.credentials && PublicKeyCredential) {
+                showToast('Biometric auth not available in browser');
+            } else {
+                showToast('Biometric not supported');
+            }
+            return;
+        } else {
+            currentPin += val;
+        }
+
+        dots.forEach((dot, i) => {
+            dot.classList.toggle('filled', i < currentPin.length);
+        });
+
+        if (currentPin.length === 4) {
+            if (currentPin === APP.settings.pin) {
+                document.getElementById('lock-screen').style.display = 'none';
+                currentPin = '';
+                dots.forEach(d => d.classList.remove('filled'));
+            } else {
+                showToast('Wrong PIN');
+                currentPin = '';
+                dots.forEach(d => d.classList.remove('filled'));
+            }
+        }
+    }
+
+    // ============ MODALS ============
+    function openModal(content) {
+        document.getElementById('modal-content').innerHTML = content;
+        document.getElementById('modal-overlay').classList.add('show');
+        document.getElementById('modal-sheet').classList.add('show');
+        lucide.createIcons();
+    }
+
+    function closeModal() {
+        document.getElementById('modal-overlay').classList.remove('show');
+        document.getElementById('modal-sheet').classList.remove('show');
+    }
+
+    function showAddPersonModal() {
+        openModal(`
+            <h3 class="font-bold text-lg mb-3">Add Person</h3>
+            <input type="text" id="new-person-name" placeholder="Name" class="w-full bg-gray-50 dark:bg-gray-700 rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 mb-3">
+            <button onclick="addPersonToSplit()" class="w-full bg-primary-500 text-white rounded-xl py-3 font-medium text-sm">Add</button>
+        `);
+    }
+
+    function addPersonToSplit() {
+        const name = document.getElementById('new-person-name').value;
+        if (!name) return;
+        const newFriend = { id: Date.now(), name, avatar: `http://static.photos/people/200x200/${Math.floor(Math.random()*999)}`, favorite: false, upiId: name.toLowerCase().replace(/\s/g,'') + '@upi' };
+        APP.friends.push(newFriend);
+        closeModal();
+        renderSplitMembers();
+        showToast(name + ' added!');
+    }
+
+    function showAddFriendModal() {
+        openModal(`
+            <h3 class="font-bold text-lg mb-3">Add Friend</h3>
+            <input type="text" id="new-friend-name" placeholder="Friend's name" class="w-full bg-gray-50 dark:bg-gray-700 rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 mb-2">
+            <input type="text" id="new-friend-upi" placeholder="UPI ID (optional)" class="w-full bg-gray-50 dark:bg-gray-700 rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 mb-3">
+            <button onclick="addFriend()" class="w-full bg-primary-500 text-white rounded-xl py-3 font-medium text-sm">Add Friend</button>
+        `);
+    }
+
+    function addFriend() {
+        const name = document.getElementById('new-friend-name').value;
+        const upi = document.getElementById('new-friend-upi').value;
+        if (!name) return;
+        APP.friends.push({ id: Date.now(), name, avatar: `http://static.photos/people/200x200/${Math.floor(Math.random()*999)}`, favorite: false, upiId: upi || name.toLowerCase().replace(/\s/g,'') + '@upi' });
+        closeModal();
+        renderFriends();
+        showToast(name + ' added as friend! 👋');
+    }
+
+    function showCreateGroupModal() {
+        openModal(`
+            <h3 class="font-bold text-lg mb-3">Create Group</h3>
+            <input type="text" id="new-group-name" placeholder="Group name" class="w-full bg-gray-50 dark:bg-gray-700 rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 mb-2">
+            <input type="text" id="new-group-emoji" placeholder="Emoji (🏠🎉)" value="🏠" class="w-full bg-gray-50 dark:bg-gray-700 rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 mb-3">
+            <p class="text-sm text-gray-500 mb-2">Select members:</p>
+            <div class="space-y-2 mb-3">${APP.friends.map(f =>
+                `<label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" value="${f.id}" class="group-member-cb rounded text-primary-500"><span class="text-sm">${f.name}</span></label>`
+            ).join('')}</div>
+            <button onclick="createGroup()" class="w-full bg-primary-500 text-white rounded-xl py-3 font-medium text-sm">Create Group</button>
+        `);
+    }
+
+    function createGroup() {
+        const name = document.getElementById('new-group-name').value;
+        const emoji = document.getElementById('new-group-emoji').value || '🏠';
+        const members = [1, ...Array.from(document.querySelectorAll('.group-member-cb:checked')).map(cb => parseInt(cb.value))];
+        if (!name) return;
+        APP.groups.push({ id: Date.now(), name, icon: emoji, members });
+        closeModal();
+        renderGroups();
+        showToast('Group created! ' + emoji);
+    }
+
+    function showCurrencySelect() {
+        const currencies = ['INR','USD','EUR','GBP','JPY','AUD','CAD','SGD','AED','CNY'];
+        openModal(`
+            <h3 class="font-bold text-lg mb-3">Select Currency</h3>
+            <div class="space-y-1">${currencies.map(c =>
+                `<button onclick="setDefaultCurrency('${c}')" class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                    <span class="font-bold text-primary-500 w-12">${SYMBOLS[c]}</span>
+                    <span class="text-sm font-medium">${c}</span>
+                </button>`
+            ).join('')}</div>
+        `);
+    }
+
+    function setDefaultCurrency(c) {
+        APP.settings.currency = c;
+        document.getElementById('default-currency-label').textContent = c + ' (' + SYMBOLS[c] + ')';
+        closeModal();
+        showToast('Currency set to ' + c);
+    }
+
+    // ============ FAQ ============
+    function toggleFaq(btn) {
+        const answer = btn.nextElementSibling;
+        const icon = btn.querySelector('[data-lucide]');
+        answer.classList.toggle('hidden');
+        icon.style.transform = answer.classList.contains('hidden') ? '' : 'rotate(180deg)';
+    }
+
+    // ============ UTILITIES ============
+    function formatCurrency(amount) {
+        const sym = SYMBOLS[APP.settings.currency] || '₹';
+        const rate = RATES[APP.settings.currency] || 1;
+        const converted = amount * rate;
+        return sym + converted.toFixed(2);
+    }
+
+    function formatDate(dateStr) {
+        const d = new Date(dateStr);
+        return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    }
+
+    function showToast(msg) {
+        const toast = document.getElementById('toast');
+        document.getElementById('toast-msg').textContent = msg;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2500);
+    }
+
+    // ============ BACK BUTTON HANDLER ============
+    window.addEventListener('popstate', (e) => {
+        goBack();
+    });
+
+    // ============ INIT ============
+    // Check if app lock should show
+    document.addEventListener('DOMContentLoaded', () => {
+        lucide.createIcons();
+        convertCurrency();
+
+        // Set time-based greeting
+        const greetingEl = document.getElementById('time-greeting');
+        if (greetingEl) {
+            const hour = new Date().getHours();
+            let greetMsg;
+            if (hour >= 5 && hour < 12) {
+                greetMsg = 'Good Morning ☀️';
+            } else if (hour >= 12 && hour < 17) {
+                greetMsg = 'Good Afternoon 🌤️';
+            } else if (hour >= 17 && hour < 21) {
+                greetMsg = 'Good Evening 🌆';
+            } else {
+                greetMsg = 'Good Night 🌙';
+            }
+            greetingEl.textContent = greetMsg;
+        }
+
+        // Auto-detect dark mode preference
+        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+            APP.settings.darkMode = true;
+            document.body.classList.add('bg-gray-950', 'text-gray-100');
+            document.body.classList.remove('bg-gray-50', 'text-gray-900');
+            const toggle = document.getElementById('dark-toggle');
+            if (toggle) { toggle.classList.remove('off'); toggle.classList.add('on'); }
+        }
+    });
+
+    // Simulate app lock on resume (visibility change)
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden && APP.settings.appLock && APP.settings.pin && navHistory[navHistory.length - 1] !== 'login') {
+            document.getElementById('lock-screen').style.display = 'flex';
+            currentPin = '';
+            document.querySelectorAll('#pin-dots .pin-dot').forEach(d => d.classList.remove('filled'));
+        }
+    });
+    </script>
+</body>
+
+</html>
