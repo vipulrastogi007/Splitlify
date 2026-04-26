@@ -1,114 +1,80 @@
 # 💸 Splitlify
+### *Smart Bill Splitting with AI-Powered Receipt Scanning*
 
-## Smart Bill Splitting with AI-Powered Receipt Scanning
+Splitlify is a modern web application designed to eliminate the friction of shared expenses. By leveraging AI to scan receipts, it automates the tedious parts of bill splitting—no more manual entry or rounding errors. Whether it's a dinner with friends, a vacation with roommates, or monthly utility bills, Splitlify ensures everyone pays their fair share.
 
-Splitlify is a modern web application that transforms the way you split bills with friends, family, and roommates. Say goodbye to manual calculations and awkward money conversations! Just upload a photo of your bill, and let our AI handle the rest. The app calculates exactly what everyone owes, tracks your spending, and helps you settle payments seamlessly.
+🔗 **Live Demo:** [splitlify.netlify.app](https://splitlify.netlify.app/)
 
-🔗 **Live Demo:** [https://splitlify.netlify.app/](https://splitlify.netlify.app/)
+---
 
 ## ✨ Key Features
 
-- 🤖 **AI-Powered Bill Scanning:** Upload a photo of your receipt, and our AI automatically extracts the total amount and itemizes the bill.
-- 👥 **Smart Splitting:** Specify who paid the bill, or enter custom amounts for each person. The app instantly calculates how much other members need to pay to reimburse the payer.
-- 📊 **Expense Tracking:** Keep a complete record of your monthly spending. View detailed insights like "You Owe" and "Owed to You" to always know where you stand.
-- 👫 **Friends & Groups:**
-  - Add friends and maintain a list of people you frequently split bills with.
-  - Create groups for trips, roommates, or recurring dinners.
-  - Mark friends as favorites for quick suggestions.
-- 💳 **Seamless Settlements:** Click "Pay Now" on any pending settlement to be redirected to your preferred payment app (Venmo, CashApp, etc.).
-- 🔔 **Smart Reminders:** Get automatic reminders for pending payments, so you never have to chase anyone for money.
-- 👤 **User Profile:** Track your total spending, number of bills split, and group memberships in one place.
-- ⚙️ **Customizable Settings:** Adjust currency, toggle dark mode, enable/disable AI auto-detection, and set default payment methods.
+* 🤖 **AI-Powered Scanning:** Upload a photo of your receipt to automatically extract the total and itemized details.
+* 👥 **Smart Splitting Logic:** Support for equal shares, custom amounts, or percentage-based splits.
+* 📊 **Expense Dashboard:** A centralized view of "You Owe" vs. "Owed to You" to track your financial standing.
+* 👫 **Groups & Friends:** Organise expenses by trip, household, or recurring social events.
+* 💳 **Seamless Settlements:** Integrated links to redirect users to preferred payment platforms for quick transfers.
+* 🌙 **Dark Mode Support:** A sleek, responsive UI that looks great in any environment.
 
 ## 🚀 How It Works
 
-1.  **Upload** a photo of your bill or enter the details manually.
-2.  **AI Analysis** automatically detects the total amount and individual items.
-3.  **Tell us who paid** the bill and who is participating in the split.
-4.  **Instant Calculation** shows you exactly what each person owes.
-5.  **Track & Settle** – All expenses are saved, and you can settle up with a single click.
+1.  **Capture:** Upload a photo of your receipt or input details manually.
+2.  **Analyze:** The AI parses the text and identifies the transaction total.
+3.  **Assign:** Select participants and specify who covered the initial payment.
+4.  **Calculate:** The app instantly generates a settlement summary for every member.
+5.  **Settle:** Keep a history of transactions and mark them as paid once settled.
 
 ## 🛠️ Tech Stack
 
-- **Frontend:** HTML5, CSS3, JavaScript (ES6+)
-- **AI Integration:** Vision model for receipt text extraction and JSON formatting
-- **Deployment:** Netlify
-- **Version Control:** Git & GitHub
+* **Frontend:** HTML5, CSS3 (Modern Flexbox/Grid), Vanilla JavaScript (ES6+).
+* **AI Engine:** Vision-based text extraction and JSON formatting for receipt parsing.
+* **Hosting:** Netlify for continuous deployment.
+* **Version Control:** Git & GitHub.
 
 ## 📂 Project Structure
 
-```
+```text
 Splitlify/
-├── index.html      # Main application interface
-├── style.css       # Styling and responsive design
+├── index.html      # Primary application structure
+├── style.css       # Core styling and responsive UI/UX
+├── app.js          # Main logic and AI integration
 └── README.md       # Project documentation
 ```
 
-## 💻 Installation & Setup
+## 💻 Getting Started
 
-To run Splitlify locally:
+To explore or modify Splitlify locally:
 
 1.  **Clone the repository:**
     ```bash
     git clone https://github.com/vipulrastogi007/Splitlify.git
     ```
-
-2.  **Navigate to the project directory:**
+2.  **Navigate to the folder:**
     ```bash
     cd Splitlify
     ```
+3.  **Run the app:**
+    Simply open `index.html` in any modern web browser. No complex build tools required!
 
-3.  **Open `index.html` in your browser** – no build step or server required!
+## 🎯 Future Roadmap
 
-## 🧑‍💻 Usage
-
-Once the app is running:
-
-1.  Click the **"Scan a Bill"** button to upload a receipt photo.
-2.  Review the AI-extracted total amount (or edit it manually).
-3.  Enter the names of people who shared the expense.
-4.  Select who paid the bill and how the bill should be split (equal shares, custom amounts, etc.).
-5.  Click **"Calculate"** to see the split summary.
-6.  Navigate to **"My Bills"** to view your history, **"Groups"** to manage shared expenses, and **"Friends"** to add favorites.
-7.  Use the **"Settle Payment"** button to pay your share or request money from others.
-
-## 🎯 Roadmap
-
-- [ ] User authentication (login/signup) to save data across devices
-- [ ] Real-time group settlements with push notifications
-- [ ] Export monthly spending reports (PDF/CSV)
-- [ ] Multi-currency support with live exchange rates
-- [ ] Split by item-level details (e.g., "I had the pasta, you had the salad")
-- [ ] Integration with more payment platforms (PayPal, Google Pay, Apple Pay)
+* [ ] **User Accounts:** Firebase integration for cross-device data syncing.
+* [ ] **Push Notifications:** Real-time alerts for payment requests.
+* [ ] **PDF Export:** Generate monthly spending reports for personal budgeting.
+* [ ] **Item-Level Split:** Assign specific items (e.g., drinks vs. mains) to individual people.
 
 ## 🤝 Contributing
 
-Contributions are welcome! If you'd like to improve Splitlify:
-
-1.  Fork the repository.
-2.  Create a feature branch (`git checkout -b feature/AmazingFeature`).
-3.  Commit your changes (`git commit -m 'Add some AmazingFeature'`).
-4.  Push to the branch (`git push origin feature/AmazingFeature`).
+1.  Fork the Project.
+2.  Create your Feature Branch (`git checkout -b feature/NewFeature`).
+3.  Commit your changes (`git commit -m 'Add NewFeature'`).
+4.  Push to the Branch (`git push origin feature/NewFeature`).
 5.  Open a Pull Request.
 
 ## 📝 License
 
-This project is open source and available under the [MIT License](https://opensource.org/licenses/MIT).
-
-## 🙏 Acknowledgments
-
-- Built with assistance from AI to simplify bill splitting for everyone.
-- Icons and design inspiration from modern expense-tracking apps.
-
-## 📬 Contact
-
-**Vipul Rastogi** – [GitHub Profile](https://github.com/vipulrastogi007)
-
-Project Link: [https://github.com/vipulrastogi007/Splitlify](https://github.com/vipulrastogi007/Splitlify)
+Distributed under the **MIT License**. See `LICENSE` for more information.
 
 ---
 
-*Made with ❤️ to make splitting bills fair, fast, and friction-free.*
-```
-
-The README includes all the core features you described, from AI-powered bill scanning to expense tracking, group management, and payment settlements. You can copy this directly into your repository's `README.md` file. The live demo link is included right at the top for easy access. Also, feel free to remove the Roadmap section if you don't want future plans listed.
+**Developed by [Vipul Rastogi](https://github.com/vipulrastogi007)** *Making finances fair, fast, and friction-free.*
