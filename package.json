@@ -1,0 +1,14 @@
+{
+  "name": "splitlify-api",
+  "version": "1.0.0",
+  "description": "Backend API for Splitlify bill splitting app",
+  "main": "netlify/functions/api.js",
+  "scripts": {
+    "start": "node netlify/functions/api.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "serverless-http": "^3.2.0"
+  }
+}
