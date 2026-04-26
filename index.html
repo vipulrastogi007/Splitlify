@@ -95,7 +95,7 @@
                 <!-- Greeting & Summary -->
                 <div class="px-4 pt-4 pb-2">
                     <p class="text-surface-500 text-sm" id="greetingText">Good morning</p>
-                    <h2 class="text-2xl font-bold mt-0.5">Vipul Rastogi 👋</h2>
+                    <h2 class="text-2xl font-bold mt-0.5" id="userGreetingName">Loading...</h2>
                 </div>
 
                 <!-- Monthly Summary Card -->
@@ -105,23 +105,23 @@
                         <div class="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-6 -translate-x-6"></div>
                         <div class="relative z-10">
                             <p class="text-primary-200 text-xs font-medium uppercase tracking-wider">This Month's Spending</p>
-                            <p class="text-3xl font-bold mt-1">$1,247.50</p>
+                            <p class="text-3xl font-bold mt-1" id="summaryTotalSpent">$0.00</p>
                             <div class="flex items-center gap-1 mt-1">
-                                <i data-lucide="trending-up" class="w-3.5 h-3.5 text-danger-300"></i>
-                                <span class="text-danger-300 text-xs font-medium">+12% from last month</span>
+                                <i data-lucide="trending-up" class="w-3.5 h-3.5 text-danger-300" id="summaryTrendIcon"></i>
+                                <span class="text-danger-300 text-xs font-medium" id="summaryTrend">+0% from last month</span>
                             </div>
                             <div class="mt-4 grid grid-cols-3 gap-3">
                                 <div class="bg-white/10 rounded-xl p-2.5 text-center backdrop-blur-sm">
                                     <p class="text-[10px] text-primary-200 uppercase">You Owe</p>
-                                    <p class="text-lg font-bold text-accent-400">$85.00</p>
+                                    <p class="text-lg font-bold text-accent-400" id="summaryYouOwe">$0.00</p>
                                 </div>
                                 <div class="bg-white/10 rounded-xl p-2.5 text-center backdrop-blur-sm">
                                     <p class="text-[10px] text-primary-200 uppercase">Owed to You</p>
-                                    <p class="text-lg font-bold text-success-400">$142.50</p>
+                                    <p class="text-lg font-bold text-success-400" id="summaryOwedToYou">$0.00</p>
                                 </div>
                                 <div class="bg-white/10 rounded-xl p-2.5 text-center backdrop-blur-sm">
                                     <p class="text-[10px] text-primary-200 uppercase">Bills</p>
-                                    <p class="text-lg font-bold">8</p>
+                                    <p class="text-lg font-bold" id="summaryBillsCount">0</p>
                                 </div>
                             </div>
                         </div>
@@ -408,7 +408,7 @@
                 <div class="px-4 pt-4 flex items-center justify-between">
                     <div>
                         <h2 class="text-xl font-bold">Friends</h2>
-                        <p class="text-surface-500 text-sm mt-0.5">12 friends · 4 favorites</p>
+                        <p class="text-surface-500 text-sm mt-0.5" id="friendsSubtitle">Loading...</p>
                     </div>
                     <button onclick="showAddFriend()" class="w-10 h-10 bg-primary-600 rounded-xl flex items-center justify-center text-white hover:bg-primary-700 transition shadow-lg shadow-primary-600/30">
                         <i data-lucide="user-plus" class="w-5 h-5"></i>
@@ -448,21 +448,21 @@
                         </div>
                         <div class="px-4 pb-4 -mt-10 relative">
                             <div class="w-20 h-20 rounded-2xl border-4 border-white overflow-hidden shadow-lg">
-                                <img src="http://static.photos/people/200x200/42" alt="Profile" class="w-full h-full object-cover">
+                                <img src="http://static.photos/people/200x200/42" alt="Profile" class="w-full h-full object-cover" id="profileAvatar">
                             </div>
-                            <h3 class="text-lg font-bold mt-2">Vipul Rastogi</h3>
-                            <p class="text-surface-500 text-sm">rastogivipul148@email.com</p>
+                            <h3 class="text-lg font-bold mt-2" id="profileName">Loading...</h3>
+                            <p class="text-surface-500 text-sm" id="profileEmail">...</p>
                             <div class="flex gap-3 mt-3">
                                 <div class="bg-primary-50 rounded-xl px-3 py-2 text-center flex-1">
-                                    <p class="text-lg font-bold text-primary-600">$1,247</p>
+                                    <p class="text-lg font-bold text-primary-600" id="profileTotalSpent">$0</p>
                                     <p class="text-[10px] text-surface-500 uppercase">Total Spent</p>
                                 </div>
                                 <div class="bg-success-50 rounded-xl px-3 py-2 text-center flex-1">
-                                    <p class="text-lg font-bold text-success-600">23</p>
+                                    <p class="text-lg font-bold text-success-600" id="profileBillsSplit">0</p>
                                     <p class="text-[10px] text-surface-500 uppercase">Bills Split</p>
                                 </div>
                                 <div class="bg-accent-500/10 rounded-xl px-3 py-2 text-center flex-1">
-                                    <p class="text-lg font-bold text-accent-600">8</p>
+                                    <p class="text-lg font-bold text-accent-600" id="profileGroups">0</p>
                                     <p class="text-[10px] text-surface-500 uppercase">Groups</p>
                                 </div>
                             </div>
@@ -741,50 +741,55 @@
         bills: [],
         groups: [],
         notifications: [],
-        pendingPayment: null
+        pendingPayment: null,
+        user: null
     };
 
     // ============= DATA =============
-    const friends = [
-        { id:1, name:'Sarah Miller', email:'sarah@email.com', avatar:'http://static.photos/people/200x200/1', isFavorite:true, balance:-42.50 },
-        { id:2, name:'Mike Chen', email:'mike@email.com', avatar:'http://static.photos/people/200x200/2', isFavorite:true, balance:28.00 },
-        { id:3, name:'Emma Wilson', email:'emma@email.com', avatar:'http://static.photos/people/200x200/3', isFavorite:true, balance:-15.00 },
-        { id:4, name:'James Brown', email:'james@email.com', avatar:'http://static.photos/people/200x200/4', isFavorite:true, balance:0 },
-        { id:5, name:'Lisa Park', email:'lisa@email.com', avatar:'http://static.photos/people/200x200/5', isFavorite:false, balance:35.00 },
-        { id:6, name:'David Kim', email:'david@email.com', avatar:'http://static.photos/people/200x200/6', isFavorite:false, balance:-22.50 },
-        { id:7, name:'Olivia Davis', email:'olivia@email.com', avatar:'http://static.photos/people/200x200/7', isFavorite:false, balance:0 },
-        { id:8, name:'Ryan Taylor', email:'ryan@email.com', avatar:'http://static.photos/people/200x200/8', isFavorite:false, balance:12.00 },
-        { id:9, name:'Sophie Martinez', email:'sophie@email.com', avatar:'http://static.photos/people/200x200/9', isFavorite:false, balance:0 },
-        { id:10, name:'Chris Lee', email:'chris@email.com', avatar:'http://static.photos/people/200x200/10', isFavorite:false, balance:-8.00 },
-        { id:11, name:'Amy White', email:'amy@email.com', avatar:'http://static.photos/people/200x200/11', isFavorite:false, balance:0 },
-        { id:12, name:'Tom Garcia', email:'tom@email.com', avatar:'http://static.photos/people/200x200/12', isFavorite:false, balance:18.00 }
-    ];
+    let friends = [];
 
-    const sampleBills = [
-        { id:'b1', name:'Dinner at Mario\'s', amount:156.80, date:'2025-06-15', category:'food', status:'pending', paidBy:'You', splitWith:[1,2,3], perPerson:39.20 },
-        { id:'b2', name:'Uber to Beach', amount:45.00, date:'2025-06-14', category:'travel', status:'settled', paidBy:'Mike Chen', splitWith:[0,2], perPerson:15.00 },
-        { id:'b3', name:'Grocery Run', amount:89.50, date:'2025-06-13', category:'food', status:'pending', paidBy:'You', splitWith:[1,4], perPerson:29.83 },
-        { id:'b4', name:'Movie Night', amount:62.00, date:'2025-06-12', category:'other', status:'settled', paidBy:'Sarah Miller', splitWith:[0,2,3], perPerson:15.50 },
-        { id:'b5', name:'Bar Tab', amount:210.40, date:'2025-06-10', category:'drinks', status:'pending', paidBy:'You', splitWith:[1,2,3,4,5], perPerson:35.07 },
-        { id:'b6', name:'Airbnb Split', amount:480.00, date:'2025-06-08', category:'travel', status:'settled', paidBy:'You', splitWith:[1,2,3], perPerson:120.00 },
-        { id:'b7', name:'Pizza Delivery', amount:38.90, date:'2025-06-05', category:'food', status:'settled', paidBy:'Emma Wilson', splitWith:[0,1], perPerson:12.97 },
-        { id:'b8', name:'Coffee Shop', amount:24.50, date:'2025-06-03', category:'drinks', status:'settled', paidBy:'You', splitWith:[2], perPerson:12.25 }
-    ];
-    state.bills = sampleBills;
+    // ============= API FUNCTIONS =============
+    const API_BASE = '/api';
 
-    const sampleGroups = [
-        { id:'g1', name:'Weekend Squad', category:'friends', members:[0,1,2,3], totalSpent:324.30, bills:3 },
-        { id:'g2', name:'Beach Trip 2025', category:'travel', members:[0,1,2,3,4,5], totalSpent:525.40, bills:2 },
-        { id:'g3', name:'Apartment 4B', category:'roommates', members:[0,6,7], totalSpent:189.50, bills:4 },
-        { id:'g4', name:'Office Lunch', category:'office', members:[0,4,8,9], totalSpent:156.90, bills:5 }
-    ];
-    state.groups = sampleGroups;
+    async function fetchData() {
+        try {
+            const response = await fetch(`${API_BASE}/data`);
+            if (!response.ok) throw new Error('Failed to fetch data');
+            const data = await response.json();
+            
+            friends = data.friends;
+            state.bills = data.bills;
+            state.groups = data.groups;
+            state.notifications = data.notifications;
+            state.user = data.user;
+            
+            renderSummary();
+            renderProfile();
+            updateNotificationBadge();
+            
+            return data;
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            showToast('Failed to load data. Using offline mode.', 'error');
+            return null;
+        }
+    }
 
-    state.notifications = [
-        { id:'n1', text:'Sarah Miller paid you $39.20 for "Dinner at Mario\'s"', time:'2 min ago', read:false, icon:'check-circle' },
-        { id:'n2', text:'Reminder: David Kim owes you $22.50', time:'1 hour ago', read:false, icon:'clock' },
-        { id:'n3', text:'Mike Chen settled "Uber to Beach" bill', time:'3 hours ago', read:false, icon:'receipt' }
-    ];
+    async function apiPost(endpoint, data) {
+        try {
+            const response = await fetch(`${API_BASE}${endpoint}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            if (!response.ok) throw new Error('Request failed');
+            return await response.json();
+        } catch (error) {
+            console.error('API Error:', error);
+            showToast('Request failed. Please try again.', 'error');
+            return null;
+        }
+    }
 
     // ============= NAVIGATION =============
     function navigateTo(page) {
@@ -828,7 +833,8 @@
         }, 500);
     }, 1800);
 
-    function initApp() {
+    async function initApp() {
+        await fetchData();
         renderWeeklyChart();
         renderRecentActivity();
         renderPendingSettlements();
@@ -844,6 +850,70 @@
         const h = new Date().getHours();
         const greet = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
         document.getElementById('greetingText').textContent = greet;
+        
+        if (state.user) {
+            document.getElementById('userGreetingName').textContent = state.user.name.split(' ')[0] + ' 👋';
+        }
+    }
+
+    function renderSummary() {
+        if (!state.user) return;
+        
+        const user = state.user;
+        
+        // Update total spent
+        document.getElementById('summaryTotalSpent').textContent = '$'+user.monthlySpending.toFixed(2);
+        
+        // Update trend
+        const trendIcon = document.getElementById('summaryTrendIcon');
+        const trendText = document.getElementById('summaryTrend');
+        if (user.monthlyChange > 0) {
+            trendIcon.className = 'w-3.5 h-3.5 text-danger-300';
+            trendText.textContent = `+${user.monthlyChange}% from last month`;
+            trendText.className = 'text-danger-300 text-xs font-medium';
+        } else if (user.monthlyChange < 0) {
+            trendIcon.className = 'w-3.5 h-3.5 text-success-300';
+            trendText.textContent = `${user.monthlyChange}% from last month`;
+            trendText.className = 'text-success-300 text-xs font-medium';
+        } else {
+            trendIcon.className = 'w-3.5 h-3.5 text-surface-300';
+            trendText.textContent = 'No change from last month';
+            trendText.className = 'text-surface-300 text-xs font-medium';
+        }
+        
+        // Update balances
+        document.getElementById('summaryYouOwe').textContent = '$'+user.youOwe.toFixed(2);
+        document.getElementById('summaryOwedToYou').textContent = '$'+user.owedToYou.toFixed(2);
+        
+        // Update bills count
+        const pendingBills = state.bills.filter(b => b.status === 'pending').length;
+        document.getElementById('summaryBillsCount').textContent = pendingBills;
+    }
+
+    function renderProfile() {
+        if (!state.user) return;
+        
+        const user = state.user;
+        
+        document.getElementById('profileAvatar').src = user.avatar;
+        document.getElementById('profileName').textContent = user.name;
+        document.getElementById('profileEmail').textContent = user.email;
+        document.getElementById('profileTotalSpent').textContent = `${Math.round(user.totalSpent).toLocaleString()}`;
+        document.getElementById('profileBillsSplit').textContent = user.billsSplit;
+        document.getElementById('profileGroups').textContent = state.groups.length;
+    }
+
+    function updateNotificationBadge() {
+        const unread = state.notifications.filter(n => !n.read).length;
+        const badge = document.getElementById('notifBadge');
+        if (badge) {
+            if (unread > 0) {
+                badge.textContent = unread > 9 ? '9+' : unread;
+                badge.style.display = 'flex';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
     }
 
     // ============= WEEKLY CHART =============
@@ -1026,21 +1096,26 @@
         document.getElementById('createGroupModal').classList.remove('hidden');
     }
     function hideCreateGroup() { document.getElementById('createGroupModal').classList.add('hidden'); }
-    function createGroup() {
+    async function createGroup() {
         const name = document.getElementById('groupNameInput').value.trim();
         const cat = document.getElementById('groupCategoryInput').value;
         if(!name) { showToast('Please enter a group name', 'error'); return; }
-        const checked = [...document.querySelectorAll('#groupMemberChecklist input:checked')].map(i => parseInt(i.value)-1);
-        const newGroup = { id:'g'+Date.now(), name, category:cat, members:checked.length > 0 ? checked : [0], totalSpent:0, bills:0 };
-        state.groups.unshift(newGroup);
-        renderGroups();
-        hideCreateGroup();
-        showToast(`Group "${name}" created! 🎉`, 'success');
-        document.getElementById('groupNameInput').value = '';
+        const checked = [...document.querySelectorAll('#groupMemberChecklist input:checked')].map(i => parseInt(i.value));
+        
+        const result = await apiPost('/groups', { name, category: cat, members: checked.length > 0 ? checked : [1] });
+        if (result) {
+            state.groups.unshift(result);
+            renderGroups();
+            hideCreateGroup();
+            showToast(`Group "${name}" created! 🎉`, 'success');
+            document.getElementById('groupNameInput').value = '';
+        }
     }
 
     // ============= FRIENDS =============
     function renderFriends() {
+        const favCount = friends.filter(f => f.isFavorite).length;
+        document.getElementById('friendsSubtitle').textContent = friends.length + ' friends · ' + favCount + ' favorites';
         renderFavoriteFriends();
         renderAllFriends();
     }
@@ -1087,17 +1162,23 @@
     }
     function showAddFriend() { document.getElementById('addFriendModal').classList.remove('hidden'); }
     function hideAddFriend() { document.getElementById('addFriendModal').classList.add('hidden'); }
-    function addFriend() {
+    async function addFriend() {
         const name = document.getElementById('addFriendName').value.trim();
+        const email = document.getElementById('addFriendEmail').value.trim();
+        const phone = document.getElementById('addFriendPhone').value.trim();
+        
         if(!name) { showToast('Please enter a name', 'error'); return; }
-        const newFriend = { id: Date.now(), name, email: document.getElementById('addFriendEmail').value, avatar: `http://static.photos/people/200x200/${Math.floor(Math.random()*999)+1}`, isFavorite: false, balance: 0 };
-        friends.push(newFriend);
-        renderFriends();
-        hideAddFriend();
-        showToast(`${name} added as friend! 🤝`, 'success');
-        document.getElementById('addFriendName').value = '';
-        document.getElementById('addFriendEmail').value = '';
-        document.getElementById('addFriendPhone').value = '';
+        
+        const result = await apiPost('/friends', { name, email, phone });
+        if (result) {
+            friends.push(result);
+            renderFriends();
+            hideAddFriend();
+            showToast(`${name} added as friend! 🤝`, 'success');
+            document.getElementById('addFriendName').value = '';
+            document.getElementById('addFriendEmail').value = '';
+            document.getElementById('addFriendPhone').value = '';
+        }
     }
 
     // ============= NOTIFICATIONS =============
@@ -1325,28 +1406,36 @@
         summary.innerHTML = html;
     }
 
-    function confirmSplit() {
+    async function confirmSplit() {
         const bill = state.currentBill;
         if(!bill) return;
 
-        const newBill = {
-            id: 'b' + Date.now(),
+        const checked = [...document.querySelectorAll('.split-person-check:checked')].map(cb => parseInt(cb.value));
+        const payerIdx = parseInt(document.querySelector('input[name="payer"]:checked')?.value || 0);
+        const people = [{name:'You (Alex)', id:0}, ...friends.slice(0,5)];
+        const payer = people[payerIdx];
+        
+        const perPerson = bill.total / (checked.length || 1);
+
+        const result = await apiPost('/bills', {
             name: bill.name,
             amount: bill.total,
-            date: new Date().toISOString().split('T')[0],
             category: bill.category,
-            status: 'pending',
-            paidBy: 'You',
-            splitWith: [1,2],
-            perPerson: bill.total / 3
-        };
-        state.bills.unshift(newBill);
-        renderBillsList();
-        renderRecentActivity();
-        resetUpload();
-        navigateTo('home');
-        showToast('Bill split successfully! 💸', 'success');
-        state.currentBill = null;
+            paidBy: payer.name,
+            splitWith: checked,
+            perPerson: perPerson
+        });
+        
+        if (result) {
+            state.bills.unshift(result);
+            renderBillsList();
+            renderRecentActivity();
+            renderSummary();
+            resetUpload();
+            navigateTo('home');
+            showToast('Bill split successfully! 💸', 'success');
+            state.currentBill = null;
+        }
     }
 
     // ============= PAYMENT =============
