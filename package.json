@@ -1,0 +1,15 @@
+{
+  "name": "splitlify",
+  "version": "1.0.0",
+  "description": "Smart bill splitting with AI-powered receipt scanning",
+  "main": "index.html",
+  "dependencies": {
+    "mongoose": "^8.0.0",
+    "firebase-admin": "^11.0.0",
+    "dotenv": "^16.0.0",
+    "tesseract.js": "^5.0.0"
+  },
+  "devDependencies": {
+    "netlify-cli": "^17.0.0"
+  }
+}
