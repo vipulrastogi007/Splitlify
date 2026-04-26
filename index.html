@@ -7,6 +7,28 @@
     <title>Splitlify- Bill Splitter</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script type="module"> 
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"; 
+        import { getAuth, GoogleAuthProvider, FacebookAuthProvider, signInWithPopup, signInWithEmailAndPassword, onAuthStateChanged, signOut, RecaptchaVerifier, signInWithPhoneNumber } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"; 
+ 
+        const firebaseConfig = { 
+            apiKey: "YOUR_API_KEY", 
+            authDomain: "YOUR_AUTH_DOMAIN", 
+            projectId: "YOUR_PROJECT_ID", 
+            storageBucket: "YOUR_STORAGE_BUCKET", 
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID", 
+            appId: "YOUR_APP_ID" 
+        }; 
+ 
+        const app = initializeApp(firebaseConfig); 
+        const auth = getAuth(app); 
+        window.fbAuth = auth; 
+        window.fbProviders = { 
+            google: new GoogleAuthProvider(), 
+            facebook: new FacebookAuthProvider() 
+        }; 
+        window.fbActions = { signInWithPopup, signInWithEmailAndPassword, onAuthStateChanged, signOut, RecaptchaVerifier, signInWithPhoneNumber }; 
+    </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
@@ -611,6 +633,7 @@
                 </div>
 
                 <div id="phone-login-form" class="mt-4 space-y-3" style="display:none;">
+                    <div id="recaptcha-container"></div>
                     <input type="tel" id="login-phone" placeholder="Phone number" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
                     <div class="flex gap-2">
                         <input type="text" id="login-otp" placeholder="OTP" class="flex-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
@@ -1299,174 +1322,14 @@
 
     <!-- ==================== JAVASCRIPT ==================== -->
     <script>
+
+
         // ============ APP STATE ============
-        const APP = {
-            user: {
-                name: 'Vipul Rastogi',
-                email: 'rastogivipul148@gmail.com',
-                phone: '+91 98765 43210'
-            },
-            friends: [{
-                id: 1,
-                name: 'Priya Sharma',
-                avatar: 'http://static.photos/people/200x200/10',
-                favorite: true,
-                upiId: 'priya@upi'
-            }, {
-                id: 2,
-                name: 'Rahul Kumar',
-                avatar: 'http://static.photos/people/200x200/20',
-                favorite: true,
-                upiId: 'rahul@upi'
-            }, {
-                id: 3,
-                name: 'Sarah Wilson',
-                avatar: 'http://static.photos/people/200x200/30',
-                favorite: false,
-                upiId: 'sarah@upi'
-            }, {
-                id: 4,
-                name: 'Mike Chen',
-                avatar: 'http://static.photos/people/200x200/40',
-                favorite: true,
-                upiId: 'mike@upi'
-            }, {
-                id: 5,
-                name: 'Anita Desai',
-                avatar: 'http://static.photos/people/200x200/50',
-                favorite: false,
-                upiId: 'anita@upi'
-            }, {
-                id: 6,
-                name: 'David Lee',
-                avatar: 'http://static.photos/people/200x200/60',
-                favorite: false,
-                upiId: 'david@upi'
-            }],
-            groups: [{
-                id: 1,
-                name: 'Roommates',
-                icon: '🏠',
-                members: [1, 2, 4]
-            }, {
-                id: 2,
-                name: 'Office Lunch',
-                icon: '🍜',
-                members: [1, 3, 5, 6]
-            }, {
-                id: 3,
-                name: 'Trip Goa',
-                icon: '🏖️',
-                members: [1, 2, 3, 4, 5]
-            }],
-            bills: [{
-                id: 1,
-                title: 'Dinner at Mainland China',
-                date: '2025-01-10',
-                total: 3200,
-                items: [{
-                    name: 'Sweet Corn Soup',
-                    price: 350,
-                    qty: 2
-                }, {
-                    name: 'Fried Rice',
-                    price: 450,
-                    qty: 2
-                }, {
-                    name: 'Manchurian',
-                    price: 380,
-                    qty: 1
-                }, {
-                    name: 'Noodles',
-                    price: 420,
-                    qty: 1
-                }, {
-                    name: 'Ice Cream',
-                    price: 250,
-                    qty: 2
-                }],
-                paidBy: 1,
-                splitAmong: [1, 2, 4],
-                perPerson: 1066.67,
-                status: 'pending',
-                category: 'food'
-            }, {
-                id: 2,
-                title: 'Uber to Airport',
-                date: '2025-01-08',
-                total: 850,
-                items: [{
-                    name: 'Uber Ride',
-                    price: 850,
-                    qty: 1
-                }],
-                paidBy: 2,
-                splitAmong: [1, 2, 3],
-                perPerson: 283.33,
-                status: 'pending',
-                category: 'travel'
-            }, {
-                id: 3,
-                title: 'Netflix Subscription',
-                date: '2025-01-05',
-                total: 649,
-                items: [{
-                    name: 'Netflix Premium',
-                    price: 649,
-                    qty: 1
-                }],
-                paidBy: 4,
-                splitAmong: [1, 2, 3, 4],
-                perPerson: 162.25,
-                status: 'settled',
-                category: 'entertainment'
-            }, {
-                id: 4,
-                title: 'Grocery Shopping',
-                date: '2025-01-02',
-                total: 2150,
-                items: [{
-                    name: 'Vegetables',
-                    price: 450,
-                    qty: 1
-                }, {
-                    name: 'Fruits',
-                    price: 380,
-                    qty: 1
-                }, {
-                    name: 'Dairy',
-                    price: 520,
-                    qty: 1
-                }, {
-                    name: 'Snacks',
-                    price: 800,
-                    qty: 1
-                }],
-                paidBy: 1,
-                splitAmong: [1, 2, 4],
-                perPerson: 716.67,
-                status: 'pending',
-                category: 'grocery'
-            }, {
-                id: 5,
-                title: 'Coffee Shop',
-                date: '2024-12-28',
-                total: 480,
-                items: [{
-                    name: 'Cappuccino',
-                    price: 180,
-                    qty: 2
-                }, {
-                    name: 'Croissant',
-                    price: 120,
-                    qty: 1
-                }],
-                paidBy: 3,
-                splitAmong: [1, 3],
-                perPerson: 240,
-                status: 'pending',
-                category: 'food'
-            }],
+        let APP = {
+            user: null,
+            friends: [],
+            groups: [],
+            bills: [],
             installments: [],
             currentBill: null,
             settings: {
@@ -1475,34 +1338,57 @@
                 pin: '',
                 currency: 'INR'
             },
-            monthlySpending: [1200, 2800, 1500, 3200, 2100, 1800],
+            monthlySpending: [0, 0, 0, 0, 0, 0],
             spendingLabels: ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
         };
 
-        // Currency rates (approximate)
+        // API Service
+        const apiService = {
+            async fetch(url, options = {}) {
+                const user = window.fbAuth.currentUser;
+                const token = user ? await user.getIdToken() : '';
+                const headers = {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                    ...options.headers
+                };
+                const res = await fetch('/api' + url, { ...options, headers });
+                if (!res.ok) {
+                    const error = await res.json().catch(() => ({ error: 'Unknown error' }));
+                    throw new Error(error.error || 'API Request Failed');
+                }
+                return res.json();
+            },
+            async syncData() {
+                try {
+                    const data = await this.fetch('/get-data');
+                    APP.user = data.user;
+                    APP.friends = data.friends;
+                    APP.bills = data.bills;
+                    APP.groups = data.groups;
+                    APP.installments = data.installments;
+                    APP.settings = data.user.settings || APP.settings;
+                    
+                    // Update greeting
+                    if (document.getElementById('user-greeting')) document.getElementById('user-greeting').textContent = APP.user.name;
+                    if (document.getElementById('profile-name')) document.getElementById('profile-name').textContent = APP.user.name;
+                    if (document.getElementById('profile-email')) document.getElementById('profile-email').textContent = APP.user.email;
+                    
+                    // Re-render current page
+                    const activePage = navHistory[navHistory.length - 1];
+                    navigateTo(activePage, true);
+                } catch (e) {
+                    console.error('Sync failed', e);
+                }
+            }
+        };
+
+        // Currency rates
         const RATES = {
-            INR: 1,
-            USD: 0.012,
-            EUR: 0.011,
-            GBP: 0.0095,
-            JPY: 1.85,
-            AUD: 0.019,
-            CAD: 0.017,
-            SGD: 0.016,
-            AED: 0.044,
-            CNY: 0.087
+            INR: 1, USD: 0.012, EUR: 0.011, GBP: 0.0095, JPY: 1.85, AUD: 0.019, CAD: 0.017, SGD: 0.016, AED: 0.044, CNY: 0.087
         };
         const SYMBOLS = {
-            INR: '₹',
-            USD: '$',
-            EUR: '€',
-            GBP: '£',
-            JPY: '¥',
-            AUD: 'A$',
-            CAD: 'C$',
-            SGD: 'S$',
-            AED: 'د.إ',
-            CNY: '¥'
+            INR: '₹', USD: '$', EUR: '€', GBP: '£', JPY: '¥', AUD: 'A$', CAD: 'C$', SGD: 'S$', AED: 'د.إ', CNY: '¥'
         };
 
         let navHistory = ['login'];
@@ -1529,24 +1415,21 @@
                 }
             }, 50);
 
-            // Bottom nav
             const bottomNav = document.getElementById('bottom-nav');
             const fabBtn = document.getElementById('fab-btn');
             const authPages = ['login'];
             if (authPages.includes(page)) {
-                bottomNav.classList.add('hidden');
-                fabBtn.classList.add('hidden');
+                bottomNav?.classList.add('hidden');
+                fabBtn?.classList.add('hidden');
             } else {
-                bottomNav.classList.remove('hidden');
-                fabBtn.classList.remove('hidden');
+                bottomNav?.classList.remove('hidden');
+                fabBtn?.classList.remove('hidden');
             }
 
-            // Update nav active
             document.querySelectorAll('.nav-item').forEach(item => {
                 item.classList.toggle('active', item.dataset.page === page);
             });
 
-            // Page-specific logic
             if (page === 'home') renderHome();
             if (page === 'bills') renderBills();
             if (page === 'friends') renderFriends();
@@ -1559,6 +1442,7 @@
         }
 
         function goBack() {
+            if (navHistory.length <= 1) return;
             navHistory.pop();
             const prevPage = navHistory[navHistory.length - 1] || 'home';
             navigateTo(prevPage, true);
@@ -1573,11 +1457,45 @@
                 }, 500);
                 lucide.createIcons();
             }, 2000);
+
+            window.fbActions.onAuthStateChanged(window.fbAuth, async (user) => {
+                if (user) {
+                    try {
+                        const userData = await apiService.fetch('/auth-sync', { method: 'POST' });
+                        APP.user = userData;
+                        await apiService.syncData();
+                        if (navHistory[navHistory.length - 1] === 'login') {
+                            navigateTo('home');
+                        }
+                    } catch (e) {
+                        console.error(e);
+                        showToast('Auth sync failed');
+                    }
+                } else {
+                    if (navHistory[navHistory.length - 1] !== 'login') {
+                        navigateTo('login');
+                    }
+                }
+            });
         });
 
-        function loginWith(method) {
-            showToast('Signed in with ' + method.charAt(0).toUpperCase() + method.slice(1));
-            navigateTo('home');
+        async function loginWith(method) {
+            try {
+                if (method === 'phone') {
+                    document.getElementById('phone-login-form').style.display = 'block';
+                    document.getElementById('email-login-form').style.display = 'none';
+                    if (!window.recaptchaVerifier) {
+                        window.recaptchaVerifier = new window.fbActions.RecaptchaVerifier(window.fbAuth, 'recaptcha-container', {
+                            'size': 'invisible'
+                        });
+                    }
+                    return;
+                }
+                const provider = window.fbProviders[method];
+                await window.fbActions.signInWithPopup(window.fbAuth, provider);
+            } catch (e) {
+                showToast('Login failed: ' + e.message);
+            }
         }
 
         function showLoginEmail() {
@@ -1585,34 +1503,37 @@
             document.getElementById('phone-login-form').style.display = 'none';
         }
 
-        function loginWithEmail() {
+        async function loginWithEmail() {
             const email = document.getElementById('login-email').value;
-            if (email) {
-                showToast('Signed in successfully!');
-                navigateTo('home');
+            const pass = document.getElementById('login-pass').value;
+            try {
+                await window.fbActions.signInWithEmailAndPassword(window.fbAuth, email, pass);
+            } catch (e) {
+                showToast('Login failed: ' + e.message);
             }
         }
 
-        function loginWithPhone() {
-            showToast('Phone verified successfully!');
-            navigateTo('home');
-        }
-
-        function sendOTP() {
-            showToast('OTP sent!');
-        }
-
-        function loginWith(method) {
-            if (method === 'phone') {
-                document.getElementById('phone-login-form').style.display = 'block';
-                document.getElementById('email-login-form').style.display = 'none';
-                return;
+        async function sendOTP() {
+            const phone = document.getElementById('login-phone').value;
+            try {
+                window.confirmationResult = await window.fbActions.signInWithPhoneNumber(window.fbAuth, phone, window.recaptchaVerifier);
+                showToast('OTP sent!');
+            } catch (e) {
+                showToast('Failed to send OTP: ' + e.message);
             }
-            showToast('Signed in with ' + method.charAt(0).toUpperCase() + method.slice(1));
-            navigateTo('home');
         }
 
-        function logout() {
+        async function loginWithPhone() {
+            const otp = document.getElementById('login-otp').value;
+            try {
+                await window.confirmationResult.confirm(otp);
+            } catch (e) {
+                showToast('Invalid OTP');
+            }
+        }
+
+        async function logout() {
+            await window.fbActions.signOut(window.fbAuth);
             navHistory = ['login'];
             navigateTo('login', true);
             showToast('Logged out');
@@ -1620,132 +1541,104 @@
 
         // ============ HOME RENDER ============
         function renderHome() {
-            let owed = 0,
-                owe = 0;
+            let owed = 0, owe = 0;
             APP.bills.forEach(b => {
                 if (b.status === 'settled') return;
-                const isPayer = b.paidBy === 1;
+                const isPayer = b.paidBy === APP.user?._id;
+                const isMember = b.splitAmong.includes(APP.user?._id);
                 if (isPayer) {
                     owed += b.total - b.perPerson;
-                } else {
+                } else if (isMember) {
                     owe += b.perPerson;
                 }
             });
 
-            document.getElementById('total-balance').textContent = formatCurrency(owed - owe);
-            document.getElementById('owed-amount').textContent = formatCurrency(owed);
-            document.getElementById('owe-amount').textContent = formatCurrency(owe);
-            document.getElementById('user-greeting').textContent = 'Vipul Rastogi';
+            if (document.getElementById('total-balance')) document.getElementById('total-balance').textContent = formatCurrency(owed - owe);
+            if (document.getElementById('owed-amount')) document.getElementById('owed-amount').textContent = formatCurrency(owed);
+            if (document.getElementById('owe-amount')) document.getElementById('owe-amount').textContent = formatCurrency(owe);
 
-            // Time-based greeting
-            const greetingEl = document.getElementById('time-greeting');
-            if (greetingEl) {
-                const hour = new Date().getHours();
-                let greetMsg;
-                if (hour >= 5 && hour < 12) {
-                    greetMsg = 'Good Morning ☀️';
-                } else if (hour >= 12 && hour < 17) {
-                    greetMsg = 'Good Afternoon 🌤️';
-                } else if (hour >= 17 && hour < 21) {
-                    greetMsg = 'Good Evening 🌆';
-                } else {
-                    greetMsg = 'Good Night 🌙';
-                }
-                greetingEl.textContent = greetMsg;
-            }
+            // Time-based greeting handled in init and syncData
 
-            // Spending chart
+            // Spending chart (simplified for now)
             const chart = document.getElementById('spending-chart');
             const labels = document.getElementById('spending-labels');
-            const maxSpend = Math.max(...APP.monthlySpending);
-            const isDark = document.documentElement.classList.contains('dark');
-            chart.innerHTML = APP.monthlySpending.map((v, i) =>
-                `<div class="flex-1 flex flex-col items-center gap-1">
-                <div class="w-full rounded-t-lg transition-all duration-500" style="height:${Math.max(8, (v/maxSpend)*80)}px; background: linear-gradient(180deg, ${i===5?'#6366f1':(isDark?'#3730a3':'#c7d2fe')}, ${i===5?'#d946ef':(isDark?'#581c87':'#e0e7ff')})"></div>
-            </div>`
-            ).join('');
-            labels.innerHTML = APP.spendingLabels.map(l => `<span class="text-gray-400 dark:text-gray-500">${l}</span>`).join('');
+            if (chart && labels) {
+                const maxSpend = Math.max(...APP.monthlySpending, 1);
+                const isDark = document.documentElement.classList.contains('dark');
+                chart.innerHTML = APP.monthlySpending.map((v, i) =>
+                    `<div class="flex-1 flex flex-col items-center gap-1">
+                    <div class="w-full rounded-t-lg transition-all duration-500" style="height:${Math.max(8, (v/maxSpend)*80)}px; background: linear-gradient(180deg, ${i===5?'#6366f1':(isDark?'#3730a3':'#c7d2fe')}, ${i===5?'#d946ef':(isDark?'#581c87':'#e0e7ff')})"></div>
+                </div>`
+                ).join('');
+                labels.innerHTML = APP.spendingLabels.map(l => `<span class="text-gray-400 dark:text-gray-500">${l}</span>`).join('');
+            }
 
             // Recent activity
             const recent = document.getElementById('recent-activity');
-            recent.innerHTML = APP.bills.slice(0, 4).map(bill => {
-                const friend = APP.friends.find(f => f.id === bill.paidBy);
-                const isPayer = bill.paidBy === 1;
-                return `<div class="bg-white dark:bg-gray-800 rounded-xl p-3.5 shadow-sm flex items-center gap-3 card-hover cursor-pointer" onclick="navigateTo('bills')">
-                <div class="w-10 h-10 rounded-xl ${isPayer ? 'bg-success-100 dark:bg-success-900/20' : 'bg-danger-50 dark:bg-danger-900/20'} flex items-center justify-center shrink-0">
-                    <i data-lucide="${isPayer ? 'arrow-down-left' : 'arrow-up-right'}" class="w-5 h-5 ${isPayer ? 'text-success-500' : 'text-danger-500'}"></i>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <p class="font-medium text-sm truncate">${bill.title}</p>
-                    <p class="text-xs text-gray-500">${formatDate(bill.date)}</p>
-                </div>
-                <div class="text-right shrink-0">
-                    <p class="font-semibold text-sm ${isPayer ? 'text-success-500' : 'text-danger-500'}">${isPayer ? '+' : '-'}${formatCurrency(isPayer ? bill.total - bill.perPerson : bill.perPerson)}</p>
-                    <p class="text-xs text-gray-400">${bill.status}</p>
-                </div>
-            </div>`;
-            }).join('');
-
+            if (recent) {
+                recent.innerHTML = APP.bills.slice(0, 4).map(bill => {
+                    const isPayer = bill.paidBy === APP.user?._id;
+                    return `<div class="bg-white dark:bg-gray-800 rounded-xl p-3.5 shadow-sm flex items-center gap-3 card-hover cursor-pointer" onclick="navigateTo('bills')">
+                    <div class="w-10 h-10 rounded-xl ${isPayer ? 'bg-success-100 dark:bg-success-900/20' : 'bg-danger-50 dark:bg-danger-900/20'} flex items-center justify-center shrink-0">
+                        <i data-lucide="${isPayer ? 'arrow-down-left' : 'arrow-up-right'}" class="w-5 h-5 ${isPayer ? 'text-success-500' : 'text-danger-500'}"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="font-medium text-sm truncate">${bill.title}</p>
+                        <p class="text-xs text-gray-500">${formatDate(bill.date)}</p>
+                    </div>
+                    <div class="text-right shrink-0">
+                        <p class="font-bold text-sm ${isPayer ? 'text-success-500' : 'text-danger-500'}">${isPayer ? '+' : '-'}${formatCurrency(bill.perPerson)}</p>
+                    </div>
+                </div>`;
+                }).join('') || '<p class="text-center text-gray-400 text-sm py-8">No recent activity</p>';
+            }
+            
             lucide.createIcons();
         }
 
         // ============ BILL SCANNER ============
-        function handleBillUpload(event) {
+        async function handleBillUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
 
             const reader = new FileReader();
-            reader.onload = (e) => {
-                document.getElementById('bill-preview').src = e.target.result;
+            reader.onload = async (e) => {
+                const base64Image = e.target.result;
+                document.getElementById('bill-preview').src = base64Image;
                 document.getElementById('upload-area').classList.add('hidden');
                 document.getElementById('scanning-area').classList.remove('hidden');
 
-                // Simulate AI scanning
-                setTimeout(() => {
+                try {
+                    const result = await apiService.fetch('/process-bill', {
+                        method: 'POST',
+                        body: JSON.stringify({ image: base64Image })
+                    });
+
                     document.getElementById('scanning-area').classList.add('hidden');
                     document.getElementById('bill-result').classList.remove('hidden');
-                    simulateBillResult();
-                }, 3000);
+
+                    APP.currentBill = {
+                        items: result.items,
+                        total: result.total,
+                        paidBy: APP.user._id,
+                        splitAmong: [APP.user._id]
+                    };
+
+                    displayBillResult();
+                } catch (err) {
+                    showToast('OCR failed, please enter manually');
+                    document.getElementById('scanning-area').classList.add('hidden');
+                    document.getElementById('bill-result').classList.remove('hidden');
+                    APP.currentBill = { items: [], total: 0, paidBy: APP.user._id, splitAmong: [APP.user._id] };
+                    displayBillResult();
+                }
             };
             reader.readAsDataURL(file);
         }
 
-        function simulateBillResult() {
-            // Mock AI result
-            const mockBill = {
-                items: [{
-                    name: 'Paneer Butter Masala',
-                    price: 380,
-                    qty: 1
-                }, {
-                    name: 'Dal Makhani',
-                    price: 320,
-                    qty: 1
-                }, {
-                    name: 'Butter Naan',
-                    price: 60,
-                    qty: 4
-                }, {
-                    name: 'Biryani',
-                    price: 350,
-                    qty: 2
-                }, {
-                    name: 'Gulab Jamun',
-                    price: 180,
-                    qty: 1
-                }, {
-                    name: 'Mineral Water',
-                    price: 40,
-                    qty: 3
-                }],
-                total: 1730
-            };
-
-            APP.currentBill = mockBill;
-
-            // Render items
+        function displayBillResult() {
             const itemsList = document.getElementById('bill-items-list');
-            itemsList.innerHTML = mockBill.items.map((item, i) =>
+            itemsList.innerHTML = APP.currentBill.items.map((item, i) =>
                 `<div class="flex justify-between text-sm" data-item="${i}">
                 <div class="flex items-center gap-2">
                     <span class="text-gray-500">${item.name}</span>
@@ -1753,20 +1646,17 @@
                 </div>
                 <span class="font-medium">${formatCurrency(item.price * item.qty)}</span>
             </div>`
-            ).join('');
+            ).join('') || '<p class="text-xs text-gray-400">No items found</p>';
 
-            document.getElementById('bill-total').textContent = formatCurrency(mockBill.total);
+            document.getElementById('bill-total').textContent = formatCurrency(APP.currentBill.total);
 
-            // Payer selection
             const payerList = document.getElementById('payer-list');
-            payerList.innerHTML = `<button onclick="selectPayer(1)" class="px-3 py-2 rounded-xl border-2 border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-600 text-sm font-medium" data-payer="1">You paid</button>` +
+            payerList.innerHTML = `<button onclick="selectPayer('${APP.user._id}')" class="px-3 py-2 rounded-xl border-2 border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-600 text-sm font-medium" data-payer="${APP.user._id}">You paid</button>` +
                 APP.friends.slice(0, 4).map(f =>
-                    `<button onclick="selectPayer(${f.id})" class="px-3 py-2 rounded-xl border-2 border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:border-primary-300 transition-colors" data-payer="${f.id}">${f.name.split(' ')[0]}</button>`
+                    `<button onclick="selectPayer('${f._id}')" class="px-3 py-2 rounded-xl border-2 border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:border-primary-300 transition-colors" data-payer="${f._id}">${f.name.split(' ')[0]}</button>`
                 ).join('');
 
-            // Split members
             renderSplitMembers();
-
             lucide.createIcons();
         }
 
@@ -1776,75 +1666,78 @@
                 btn.classList.add('border-gray-200', 'dark:border-gray-700');
             });
             const selected = document.querySelector(`#payer-list button[data-payer="${id}"]`);
-            selected.classList.add('border-primary-500', 'bg-primary-50', 'dark:bg-primary-900/20', 'text-primary-600');
-            selected.classList.remove('border-gray-200', 'dark:border-gray-700');
+            if (selected) {
+                selected.classList.add('border-primary-500', 'bg-primary-50', 'dark:bg-primary-900/20', 'text-primary-600');
+                selected.classList.remove('border-gray-200', 'dark:border-gray-700');
+            }
             APP.currentBill.paidBy = id;
         }
 
         function renderSplitMembers() {
-            const members = [1, ...APP.friends.slice(0, 3).map(f => f.id)];
+            const members = [APP.user._id, ...APP.friends.slice(0, 3).map(f => f._id)];
             APP.currentBill.splitAmong = members;
             const perPerson = APP.currentBill.total / members.length;
+            APP.currentBill.perPerson = perPerson;
 
             const list = document.getElementById('split-members-list');
-            list.innerHTML = [{
-                id: 1,
-                name: 'You',
-                avatar: 'http://static.photos/people/200x200/1'
-            }, ...APP.friends.slice(0, 3)].map(f =>
-                `<div class="flex items-center gap-3">
-                <img src="${f.avatar}" class="w-8 h-8 rounded-full object-cover" alt="${f.name}">
-                <span class="flex-1 text-sm font-medium">${f.id === 1 ? 'You' : f.name}</span>
-                <span class="text-sm text-primary-500 font-medium">${formatCurrency(perPerson)}</span>
-            </div>`
-            ).join('');
+            list.innerHTML = members.map(mid => {
+                const f = mid === APP.user._id ? { name: 'You', avatar: APP.user.avatar } : APP.friends.find(fr => fr._id === mid);
+                return `<div class="flex items-center gap-3">
+                    <img src="${f.avatar}" class="w-8 h-8 rounded-full object-cover">
+                    <span class="flex-1 text-sm">${f.name}</span>
+                    <span class="text-sm font-semibold text-primary-500">${formatCurrency(perPerson)}</span>
+                </div>`;
+            }).join('');
 
             document.getElementById('per-person-amount').textContent = formatCurrency(perPerson);
         }
 
-        function saveBillSplit() {
+        async function saveBillSplit() {
             if (!APP.currentBill) return;
-            const newBill = {
-                id: APP.bills.length + 1,
-                title: 'Scanned Bill',
-                date: new Date().toISOString().split('T')[0],
-                total: APP.currentBill.total,
-                items: APP.currentBill.items,
-                paidBy: APP.currentBill.paidBy || 1,
-                splitAmong: APP.currentBill.splitAmong,
-                perPerson: APP.currentBill.total / APP.currentBill.splitAmong.length,
-                status: 'pending',
-                category: 'food'
-            };
-            APP.bills.unshift(newBill);
-            APP.monthlySpending[APP.monthlySpending.length - 1] += newBill.total;
-            showToast('Bill saved & split successfully!');
-            navigateTo('home');
+            try {
+                const newBill = {
+                    title: 'Scanned Bill',
+                    date: new Date().toISOString().split('T')[0],
+                    total: APP.currentBill.total,
+                    items: APP.currentBill.items,
+                    paidBy: APP.currentBill.paidBy,
+                    splitAmong: APP.currentBill.splitAmong,
+                    perPerson: APP.currentBill.perPerson,
+                    status: 'pending',
+                    category: 'food'
+                };
+                
+                await apiService.fetch('/create-bill', {
+                    method: 'POST',
+                    body: JSON.stringify(newBill)
+                });
 
-            // Reset scanner
-            document.getElementById('upload-area').classList.remove('hidden');
-            document.getElementById('bill-result').classList.add('hidden');
-            document.getElementById('scanning-area').classList.add('hidden');
+                showToast('Bill saved & split successfully!');
+                await apiService.syncData();
+                navigateTo('home');
+
+                // Reset scanner
+                document.getElementById('upload-area').classList.remove('hidden');
+                document.getElementById('bill-result').classList.add('hidden');
+                document.getElementById('scanning-area').classList.add('hidden');
+            } catch (e) {
+                showToast('Failed to save bill');
+            }
         }
 
         // ============ BILLS ============
         function renderBills(filter = 'all') {
             const list = document.getElementById('bills-list');
+            if (!list) return;
             let filtered = APP.bills;
-            if (filter === 'owed') filtered = APP.bills.filter(b => b.paidBy === 1 && b.status !== 'settled');
-            if (filter === 'owe') filtered = APP.bills.filter(b => b.paidBy !== 1 && b.status !== 'settled');
+            if (filter === 'owed') filtered = APP.bills.filter(b => b.paidBy === APP.user._id && b.status !== 'settled');
+            if (filter === 'owe') filtered = APP.bills.filter(b => b.paidBy !== APP.user._id && b.status !== 'settled' && b.splitAmong.includes(APP.user._id));
             if (filter === 'settled') filtered = APP.bills.filter(b => b.status === 'settled');
 
             list.innerHTML = filtered.map(bill => {
-                const friend = APP.friends.find(f => f.id === bill.paidBy);
-                const isPayer = bill.paidBy === 1;
-                const catIcon = {
-                    food: 'utensils',
-                    travel: 'car',
-                    entertainment: 'tv',
-                    grocery: 'shopping-cart'
-                }[bill.category] || 'receipt';
-                return `<div class="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm card-hover cursor-pointer" onclick="viewBillDetail(${bill.id})">
+                const isPayer = bill.paidBy === APP.user._id;
+                const catIcon = { food: 'utensils', travel: 'car', entertainment: 'tv', grocery: 'shopping-cart' }[bill.category] || 'receipt';
+                return `<div class="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm card-hover cursor-pointer" onclick="viewBillDetail('${bill._id}')">
                 <div class="flex items-center gap-3">
                     <div class="w-12 h-12 rounded-xl ${isPayer ? 'bg-success-50 dark:bg-success-900/20' : 'bg-danger-50 dark:bg-danger-900/20'} flex items-center justify-center shrink-0">
                         <i data-lucide="${catIcon}" class="w-6 h-6 ${isPayer ? 'text-success-500' : 'text-danger-500'}"></i>
@@ -1859,9 +1752,8 @@
                     </div>
                 </div>
             </div>`;
-            }).join('');
+            }).join('') || '<p class="text-center text-gray-400 text-sm py-8">No bills found</p>';
 
-            // Filter buttons
             document.querySelectorAll('.bill-filter').forEach(btn => {
                 btn.onclick = () => {
                     document.querySelectorAll('.bill-filter').forEach(b => {
@@ -1878,10 +1770,10 @@
         }
 
         function viewBillDetail(id) {
-            const bill = APP.bills.find(b => b.id === id);
+            const bill = APP.bills.find(b => b._id === id);
             if (!bill) return;
 
-            const payerName = bill.paidBy === 1 ? 'You' : APP.friends.find(f => f.id === bill.paidBy)?.name || 'Unknown';
+            const payerName = bill.paidBy === APP.user._id ? 'You' : APP.friends.find(f => f._id === bill.paidBy)?.name || 'Someone';
 
             openModal(`
             <h3 class="font-bold text-lg mb-1">${bill.title}</h3>
@@ -1895,575 +1787,310 @@
                 <div class="flex justify-between text-sm"><span class="text-gray-500">Per person</span><span>${formatCurrency(bill.perPerson)}</span></div>
             </div>
             ${bill.status !== 'settled' ? `<div class="flex gap-2">
-                <button onclick="settleBill(${bill.id})" class="flex-1 bg-success-500 text-white rounded-xl py-3 font-medium text-sm active:scale-[0.98] transition-transform">Settle Up</button>
-                <button onclick="enableInstallment(${bill.id})" class="flex-1 bg-primary-500 text-white rounded-xl py-3 font-medium text-sm active:scale-[0.98] transition-transform">Installment</button>
+                <button onclick="settleBill('${bill._id}')" class="flex-1 bg-success-500 text-white rounded-xl py-3 font-medium text-sm active:scale-[0.98] transition-transform">Settle Up</button>
+                <button onclick="enableInstallment('${bill._id}')" class="flex-1 bg-primary-500 text-white rounded-xl py-3 font-medium text-sm active:scale-[0.98] transition-transform">Installment</button>
             </div>` : '<p class="text-center text-success-500 font-medium">✓ Settled</p>'}
         `);
-    }
-
-    function settleBill(id) {
-        const bill = APP.bills.find(b => b.id === id);
-        if (bill) {
-            bill.status = 'settled';
-            closeModal();
-            renderBills();
-            showToast('Bill settled! 🎉');
         }
-    }
 
-    function enableInstallment(id) {
-        const bill = APP.bills.find(b => b.id === id);
-        if (!bill) return;
-        closeModal();
+        async function settleBill(id) {
+            try {
+                await apiService.fetch('/settle-bill', {
+                    method: 'POST',
+                    body: JSON.stringify({ billId: id })
+                });
+                closeModal();
+                await apiService.syncData();
+                showToast('Bill settled! 🎉');
+            } catch (e) {
+                showToast('Failed to settle bill');
+            }
+        }
 
-        openModal(`
-            <h3 class="font-bold text-lg mb-3">Set Up Installments</h3>
-            <p class="text-sm text-gray-500 mb-3">For: ${bill.title} (${formatCurrency(bill.perPerson)})</p>
-            <div class="mb-3">
-                <label class="text-sm text-gray-500 block mb-1">Number of payments</label>
-                <select id="installment-count" class="w-full bg-gray-50 dark:bg-gray-700 rounded-xl py-2.5 px-4 text-sm">
-                    <option value="2">2 payments</option>
-                    <option value="3">3 payments</option>
-                    <option value="4">4 payments</option>
-                    <option value="6">6 payments</option>
-                </select>
-            </div>
-            <button onclick="createInstallment(${bill.id})" class="w-full bg-primary-500 text-white rounded-xl py-3 font-medium text-sm active:scale-[0.98] transition-transform">Create Installment Plan</button>
-        `);
-    }
+        // ============ FRIENDS ============
+        function renderFriends() {
+            const search = document.getElementById('friend-search')?.value?.toLowerCase() || '';
+            const favs = APP.friends.filter(f => f.favorite);
+            const favEl = document.getElementById('favorite-friends');
+            if (favEl) {
+                favEl.innerHTML = favs.map(f =>
+                    `<button onclick="viewFriendDetail('${f._id}')" class="flex flex-col items-center gap-1 shrink-0">
+                        <div class="w-14 h-14 rounded-full overflow-hidden ring-2 ring-primary-200 dark:ring-primary-800"><img src="${f.avatar}" class="w-full h-full object-cover"></div>
+                        <span class="text-xs font-medium">${f.name.split(' ')[0]}</span>
+                    </button>`
+                ).join('');
+            }
 
-    function createInstallment(billId) {
-        const bill = APP.bills.find(b => b.id === billId);
-        const count = parseInt(document.getElementById('installment-count').value);
-        const perInstallment = bill.perPerson / count;
+            const filtered = APP.friends.filter(f => f.name.toLowerCase().includes(search));
+            const listEl = document.getElementById('all-friends-list');
+            if (listEl) {
+                listEl.innerHTML = filtered.map(f => {
+                    let balance = 0;
+                    APP.bills.forEach(b => {
+                        if (b.status === 'settled') return;
+                        if (b.paidBy === APP.user._id && b.splitAmong.includes(f._id)) balance += b.perPerson;
+                        if (b.paidBy === f._id && b.splitAmong.includes(APP.user._id)) balance -= b.perPerson;
+                    });
+                    return `<div class="bg-white dark:bg-gray-800 rounded-xl p-3 shadow-sm flex items-center gap-3 cursor-pointer card-hover" onclick="viewFriendDetail('${f._id}')">
+                        <img src="${f.avatar}" class="w-10 h-10 rounded-full object-cover">
+                        <div class="flex-1 min-w-0">
+                            <p class="font-medium text-sm">${f.name}</p>
+                            <p class="text-xs ${balance > 0 ? 'text-success-500' : balance < 0 ? 'text-danger-500' : 'text-gray-400'}">${balance > 0 ? 'owes you ' + formatCurrency(balance) : balance < 0 ? 'you owe ' + formatCurrency(Math.abs(balance)) : 'settled up'}</p>
+                        </div>
+                        <i data-lucide="chevron-right" class="w-4 h-4 text-gray-400"></i>
+                    </div>`;
+                }).join('') || '<p class="text-center text-gray-400 text-sm py-8">No friends found</p>';
+            }
+            lucide.createIcons();
+        }
 
-        APP.installments.push({
-            id: Date.now(),
-            billId,
-            title: bill.title,
-            totalAmount: bill.perPerson,
-            installmentCount: count,
-            perInstallment: perInstallment,
-            paid: 0,
-            payments: [],
-            createdAt: new Date().toISOString().split('T')[0]
-        });
+        function viewFriendDetail(id) {
+            const friend = APP.friends.find(f => f._id === id);
+            if (!friend) return;
+            currentPayFriend = friend;
 
-        closeModal();
-        showToast('Installment plan created!');
-        navigateTo('installments');
-    }
-
-    // ============ FRIENDS ============
-    function renderFriends() {
-        const search = document.getElementById('friend-search')?.value?.toLowerCase() || '';
-
-        // Favorites
-        const favs = APP.friends.filter(f => f.favorite);
-        document.getElementById('favorite-friends').innerHTML = favs.map(f =>
-            `<button onclick="viewFriendDetail(${f.id})" class="flex flex-col items-center gap-1 shrink-0">
-                <div class="w-14 h-14 rounded-full overflow-hidden ring-2 ring-primary-200 dark:ring-primary-800"><img src="${f.avatar}" class="w-full h-full object-cover" alt="${f.name}"></div>
-                <span class="text-xs font-medium">${f.name.split(' ')[0]}</span>
-            </button>`
-        ).join('');
-
-        // All friends
-        const filtered = APP.friends.filter(f => f.name.toLowerCase().includes(search));
-        document.getElementById('all-friends-list').innerHTML = filtered.map(f => {
             let balance = 0;
             APP.bills.forEach(b => {
                 if (b.status === 'settled') return;
-                if (b.paidBy === 1 && b.splitAmong.includes(f.id)) balance += b.perPerson;
-                if (b.paidBy === f.id && b.splitAmong.includes(1)) balance -= b.perPerson;
+                if (b.paidBy === APP.user._id && b.splitAmong.includes(id)) balance += b.perPerson;
+                if (b.paidBy === id && b.splitAmong.includes(APP.user._id)) balance -= b.perPerson;
             });
-            return `<div class="bg-white dark:bg-gray-800 rounded-xl p-3 shadow-sm flex items-center gap-3 cursor-pointer card-hover" onclick="viewFriendDetail(${f.id})">
-                <img src="${f.avatar}" class="w-10 h-10 rounded-full object-cover" alt="${f.name}">
-                <div class="flex-1 min-w-0">
-                    <p class="font-medium text-sm">${f.name}</p>
-                    <p class="text-xs ${balance > 0 ? 'text-success-500' : balance < 0 ? 'text-danger-500' : 'text-gray-400'}">${balance > 0 ? 'owes you ' + formatCurrency(balance) : balance < 0 ? 'you owe ' + formatCurrency(Math.abs(balance)) : 'settled up'}</p>
-                </div>
-                <i data-lucide="chevron-right" class="w-4 h-4 text-gray-400"></i>
-            </div>`;
-        }).join('');
 
-        lucide.createIcons();
-    }
+            if (document.getElementById('friend-detail-name')) document.getElementById('friend-detail-name').textContent = friend.name;
+            if (document.getElementById('friend-detail-avatar')) document.getElementById('friend-detail-avatar').src = friend.avatar;
+            if (document.getElementById('friend-detail-balance')) document.getElementById('friend-detail-balance').textContent = formatCurrency(Math.abs(balance));
+            if (document.getElementById('friend-detail-balance-label')) document.getElementById('friend-detail-balance-label').textContent = balance > 0 ? 'owes you' : balance < 0 ? 'you owe' : 'settled up';
 
-    function filterFriends() { renderFriends(); }
+            const friendBills = APP.bills.filter(b => b.splitAmong.includes(id) || b.paidBy === id);
+            const billsEl = document.getElementById('friend-bills');
+            if (billsEl) {
+                billsEl.innerHTML = friendBills.map(bill => {
+                    const isPayer = bill.paidBy === APP.user._id;
+                    return `<div class="bg-white dark:bg-gray-800 rounded-xl p-3 shadow-sm flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg ${isPayer ? 'bg-success-50 dark:bg-success-900/20' : 'bg-danger-50 dark:bg-danger-900/20'} flex items-center justify-center shrink-0">
+                            <i data-lucide="${isPayer ? 'arrow-down-left' : 'arrow-up-right'}" class="w-5 h-5 ${isPayer ? 'text-success-500' : 'text-danger-500'}"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="font-medium text-sm truncate">${bill.title}</p>
+                            <p class="text-xs text-gray-500">${formatDate(bill.date)}</p>
+                        </div>
+                        <span class="font-semibold text-sm ${isPayer ? 'text-success-500' : 'text-danger-500'}">${isPayer ? '+' : '-'}${formatCurrency(bill.perPerson)}</span>
+                    </div>`;
+                }).join('') || '<p class="text-center text-gray-400 text-sm py-4">No shared bills yet</p>';
+            }
 
-    function viewFriendDetail(id) {
-        const friend = APP.friends.find(f => f.id === id);
-        if (!friend) return;
-        currentPayFriend = friend;
-
-        let balance = 0;
-        APP.bills.forEach(b => {
-            if (b.status === 'settled') return;
-            if (b.paidBy === 1 && b.splitAmong.includes(id)) balance += b.perPerson;
-            if (b.paidBy === id && b.splitAmong.includes(1)) balance -= b.perPerson;
-        });
-
-        document.getElementById('friend-detail-name').textContent = friend.name;
-        document.getElementById('friend-detail-avatar').src = friend.avatar;
-        document.getElementById('friend-detail-balance').textContent = formatCurrency(Math.abs(balance));
-        document.getElementById('friend-detail-balance-label').textContent = balance > 0 ? 'owes you' : balance < 0 ? 'you owe' : 'settled up';
-
-        // Friend's shared bills
-        const friendBills = APP.bills.filter(b => b.splitAmong.includes(id) || b.paidBy === id);
-        document.getElementById('friend-bills').innerHTML = friendBills.map(bill => {
-            const isPayer = bill.paidBy === 1;
-            return `<div class="bg-white dark:bg-gray-800 rounded-xl p-3 shadow-sm flex items-center gap-3">
-                <div class="w-10 h-10 rounded-lg ${isPayer ? 'bg-success-50 dark:bg-success-900/20' : 'bg-danger-50 dark:bg-danger-900/20'} flex items-center justify-center shrink-0">
-                    <i data-lucide="${isPayer ? 'arrow-down-left' : 'arrow-up-right'}" class="w-5 h-5 ${isPayer ? 'text-success-500' : 'text-danger-500'}"></i>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <p class="font-medium text-sm truncate">${bill.title}</p>
-                    <p class="text-xs text-gray-500">${formatDate(bill.date)}</p>
-                </div>
-                <span class="font-semibold text-sm ${isPayer ? 'text-success-500' : 'text-danger-500'}">${isPayer ? '+' : '-'}${formatCurrency(bill.perPerson)}</span>
-            </div>`;
-        }).join('') || '<p class="text-center text-gray-400 text-sm py-4">No shared bills yet</p>';
-
-        navigateTo('friend-detail');
-        lucide.createIcons();
-    }
-
-    function showPayNowForFriend() {
-        if (!currentPayFriend) return;
-        let balance = 0;
-        APP.bills.forEach(b => {
-            if (b.status === 'settled') return;
-            if (b.paidBy === currentPayFriend.id && b.splitAmong.includes(1)) balance += b.perPerson;
-        });
-        document.getElementById('pay-amount').textContent = formatCurrency(balance || 0);
-        document.getElementById('pay-to').textContent = currentPayFriend.name;
-        navigateTo('paynow');
-    }
-
-    function sendReminder() {
-        if (currentPayFriend) showToast('Reminder sent to ' + currentPayFriend.name + ' 📩');
-    }
-
-    // ============ GROUPS ============
-    function renderGroups() {
-        document.getElementById('groups-list').innerHTML = APP.groups.map(g => {
-            const memberAvatars = g.members.slice(0, 3).map(mid => {
-                const f = APP.friends.find(fr => fr.id === mid);
-                return f ? `<img src="${f.avatar}" class="w-7 h-7 rounded-full border-2 border-white dark:border-gray-900 -ml-2 first:ml-0 object-cover" alt="">` : '';
-            }).join('');
-            return `<div class="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm card-hover cursor-pointer" onclick="viewGroupDetail(${g.id})">
-                <div class="flex items-center gap-3">
-                    <div class="w-12 h-12 rounded-xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center text-2xl shrink-0">${g.icon}</div>
-                    <div class="flex-1 min-w-0">
-                        <p class="font-semibold">${g.name}</p>
-                        <p class="text-xs text-gray-500">${g.members.length} members</p>
-                    </div>
-                    <div class="flex items-center">${memberAvatars}</div>
-                </div>
-            </div>`;
-        }).join('');
-
-        lucide.createIcons();
-    }
-
-    function viewGroupDetail(id) {
-        const group = APP.groups.find(g => g.id === id);
-        if (!group) return;
-
-        document.getElementById('group-detail-name').textContent = group.icon + ' ' + group.name;
-        document.getElementById('group-detail-members').textContent = group.members.length + ' members';
-
-        // Balances
-        const balances = document.getElementById('group-balances');
-        balances.innerHTML = group.members.map(mid => {
-            const f = mid === 1 ? { name: 'You', avatar: 'http://static.photos/people/200x200/1' } : APP.friends.find(fr => fr.id === mid);
-            let bal = 0;
-            APP.bills.forEach(b => {
-                if (b.status === 'settled') return;
-                if (b.paidBy === mid && b.splitAmong.includes(1)) bal -= b.perPerson;
-                if (b.paidBy === 1 && b.splitAmong.includes(mid)) bal += b.perPerson;
-            });
-            return `<div class="flex items-center gap-3 py-2">
-                <img src="${f.avatar}" class="w-8 h-8 rounded-full object-cover" alt="">
-                <span class="flex-1 text-sm font-medium">${f.name}</span>
-                <span class="text-sm font-semibold ${bal > 0 ? 'text-success-500' : bal < 0 ? 'text-danger-500' : 'text-gray-400'}">${bal > 0 ? '+' : ''}${formatCurrency(bal)}</span>
-            </div>`;
-        }).join('');
-
-        // Group bills
-        const groupBills = APP.bills.filter(b => b.splitAmong.some(mid => group.members.includes(mid)));
-        document.getElementById('group-bills').innerHTML = groupBills.slice(0, 3).map(b =>
-            `<div class="bg-white dark:bg-gray-800 rounded-xl p-3 shadow-sm flex items-center gap-3">
-                <div class="w-10 h-10 rounded-lg bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center"><i data-lucide="receipt" class="w-5 h-5 text-primary-500"></i></div>
-                <div class="flex-1 min-w-0"><p class="font-medium text-sm truncate">${b.title}</p><p class="text-xs text-gray-500">${formatDate(bill.date)}</p></div>
-                <span class="font-semibold text-sm">${formatCurrency(b.total)}</span>
-            </div>`
-        ).join('') || '<p class="text-gray-400 text-sm text-center py-4">No bills yet</p>';
-
-        navigateTo('group-detail');
-        lucide.createIcons();
-    }
-
-    // ============ CURRENCY ============
-    function convertCurrency() {
-        const from = document.getElementById('currency-from')?.value || 'INR';
-        const to = document.getElementById('currency-to')?.value || 'USD';
-        const amount = parseFloat(document.getElementById('currency-amount')?.value || 0);
-
-        const inrAmount = amount / RATES[from];
-        const result = inrAmount * RATES[to];
-
-        document.getElementById('currency-result').textContent = SYMBOLS[to] + result.toFixed(2);
-        document.getElementById('currency-rate').textContent = `1 ${from} = ${(RATES[to] / RATES[from]).toFixed(4)} ${to}`;
-
-        // Popular conversions
-        const popular = document.getElementById('popular-conversions');
-        const amounts = [100, 500, 1000, 5000];
-        popular.innerHTML = amounts.map(a => {
-            const r = (a / RATES[from]) * RATES[to];
-            return `<div class="bg-white dark:bg-gray-800 rounded-xl p-3 shadow-sm flex items-center gap-2">
-                <div class="w-8 h-8 bg-primary-50 dark:bg-primary-900/20 rounded-lg flex items-center justify-center shrink-0"><i data-lucide="arrow-right-left" class="w-4 h-4 text-primary-500"></i></div>
-                <div>
-                    <p class="text-sm font-medium">${SYMBOLS[from]}${a.toLocaleString()}</p>
-                    <p class="text-xs text-gray-500">= ${SYMBOLS[to]}${r.toFixed(2)}</p>
-                </div>
-            </div>`;
-        }).join('');
-        lucide.createIcons();
-    }
-
-    function swapCurrencies() {
-        const from = document.getElementById('currency-from');
-        const to = document.getElementById('currency-to');
-        const temp = from.value;
-        from.value = to.value;
-        to.value = temp;
-        convertCurrency();
-    }
-
-    // ============ INSTALLMENTS ============
-    function renderInstallments() {
-        const list = document.getElementById('installments-list');
-        const noInst = document.getElementById('no-installments');
-
-        if (APP.installments.length === 0) {
-            list.innerHTML = '';
-            noInst.classList.remove('hidden');
+            navigateTo('friend-detail');
             lucide.createIcons();
-            return;
-        }
-        noInst.classList.add('hidden');
-
-        list.innerHTML = APP.installments.map(inst => {
-            const progress = inst.paid / inst.totalAmount * 100;
-            const remaining = inst.totalAmount - inst.paid;
-            const nextPayment = inst.perInstallment;
-            return `<div class="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm">
-                <div class="flex items-center justify-between mb-3">
-                    <div>
-                        <h3 class="font-bold">${inst.title}</h3>
-                        <p class="text-xs text-gray-500">${inst.installmentCount} payments · ${formatCurrency(inst.perInstallment)} each</p>
-                    </div>
-                    <span class="bg-primary-100 dark:bg-primary-900/30 text-primary-600 text-xs font-semibold px-2.5 py-1 rounded-full">${inst.paid < inst.totalAmount ? 'Active' : 'Complete'}</span>
-                </div>
-                <div class="mb-3">
-                    <div class="flex justify-between text-sm mb-1">
-                        <span class="text-gray-500">Progress</span>
-                        <span class="font-medium">${formatCurrency(inst.paid)} / ${formatCurrency(inst.totalAmount)}</span>
-                    </div>
-                    <div class="h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
-                        <div class="h-full bg-gradient-to-r from-primary-500 to-accent-500 rounded-full transition-all" style="width:${progress}%"></div>
-                    </div>
-                </div>
-                <div class="flex items-center justify-between">
-                    <span class="text-sm text-gray-500">Remaining: ${formatCurrency(remaining)}</span>
-                    ${remaining > 0 ? `<button onclick="payInstallment(${inst.id})" class="bg-primary-500 text-white text-sm px-4 py-2 rounded-xl font-medium active:scale-95 transition-transform">Pay ${formatCurrency(nextPayment)}</button>` : '<span class="text-success-500 text-sm font-medium">✓ Complete</span>'}
-                </div>
-                ${inst.payments.length > 0 ? `<div class="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700 space-y-1">${inst.payments.map(p =>
-                    `<div class="flex justify-between text-xs"><span class="text-gray-500">${formatDate(p.date)}</span><span class="text-success-500">-${formatCurrency(p.amount)}</span></div>`
-                ).join('')}</div>` : ''}
-            </div>`;
-        }).join('');
-
-        lucide.createIcons();
-    }
-
-    function payInstallment(instId) {
-        const inst = APP.installments.find(i => i.id === instId);
-        if (!inst) return;
-
-        const remaining = inst.totalAmount - inst.paid;
-        const amount = Math.min(inst.perInstallment, remaining);
-
-        inst.paid += amount;
-        inst.payments.push({ date: new Date().toISOString().split('T')[0], amount });
-
-        // Update bill
-        if (inst.paid >= inst.totalAmount) {
-            const bill = APP.bills.find(b => b.id === inst.billId);
-            if (bill) bill.status = 'settled';
-            showToast('Installment fully paid! 🎉');
-        } else {
-            showToast(`Payment of ${formatCurrency(amount)} recorded!`);
         }
 
-        renderInstallments();
-    }
-
-    // ============ PAY NOW ============
-    function payViaUPI(app) {
-        const amount = document.getElementById('pay-amount').textContent;
-        const to = document.getElementById('pay-to').textContent;
-
-        // Try to open UPI app (will work on mobile)
-        const upiLinks = {
-            phonepe: 'phonepe://',
-            gpay: 'gpay://',
-            paytm: 'paytm://',
-            bhim: 'bhim://pay?',
-            whatsapp: 'whatsapp://send?text=Payment',
-            other: 'upi://pay?'
-        };
-
-        const upiId = currentPayFriend?.upiId || 'merchant@upi';
-        const amountNum = parseFloat(amount.replace(/[^\d.]/g, '')) || 0;
-        const link = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(to)}&am=${amountNum}&cu=INR`;
-
-        try {
-            window.location.href = link;
-        } catch(e) {}
-
-        showToast(`Opening ${app === 'gpay' ? 'Google Pay' : app === 'phonepe' ? 'PhonePe' : app.charAt(0).toUpperCase() + app.slice(1)} for payment...`);
-    }
-
-    function payViaUPIId() {
-        const upiId = document.getElementById('upi-id-input').value;
-        if (!upiId) { showToast('Please enter a UPI ID'); return; }
-        const amount = document.getElementById('pay-amount').textContent;
-        const amountNum = parseFloat(amount.replace(/[^\d.]/g, '')) || 0;
-        const link = `upi://pay?pa=${upiId}&am=${amountNum}&cu=INR`;
-        try { window.location.href = link; } catch(e) {}
-        showToast('Redirecting to payment...');
-    }
-
-    // ============ PROFILE ============
-    function renderProfile() {
-        document.getElementById('profile-name').textContent = APP.user.name;
-        document.getElementById('profile-email').textContent = APP.user.email;
-        document.getElementById('stat-bills').textContent = APP.bills.length;
-        document.getElementById('stat-friends').textContent = APP.friends.length;
-        document.getElementById('stat-groups').textContent = APP.groups.length;
-    }
-
-    // ============ SETTINGS ============
-    function toggleDarkMode() {
-        const toggle = document.getElementById('dark-toggle');
-        toggle.classList.toggle('on');
-        toggle.classList.toggle('off');
-        APP.settings.darkMode = toggle.classList.contains('on');
-
-        if (APP.settings.darkMode) {
-            document.documentElement.classList.add('dark');
-            document.body.classList.add('bg-gray-950', 'text-gray-100');
-            document.body.classList.remove('bg-gray-50', 'text-gray-900');
-        } else {
-            document.documentElement.classList.remove('dark');
-            document.body.classList.remove('bg-gray-950', 'text-gray-100');
-            document.body.classList.add('bg-gray-50', 'text-gray-900');
-        }
-        // Re-render home to update chart colors
-        if (document.getElementById('page-home').classList.contains('active')) {
-            renderHome();
-        }
-    }
-
-    function toggleAppLock() {
-        const toggle = document.getElementById('lock-toggle');
-        toggle.classList.toggle('on');
-        toggle.classList.toggle('off');
-        APP.settings.appLock = toggle.classList.contains('on');
-
-        if (APP.settings.appLock) {
-            document.getElementById('set-pin-section').classList.remove('hidden');
-        } else {
-            document.getElementById('set-pin-section').classList.add('hidden');
-            document.getElementById('lock-screen').style.display = 'none';
-        }
-    }
-
-    function pinInput(el, idx) {
-        const inputs = document.querySelectorAll('.pin-input');
-        if (el.value && idx < 3) inputs[idx + 1].focus();
-    }
-
-    function savePin() {
-        const inputs = document.querySelectorAll('.pin-input');
-        const pin = Array.from(inputs).map(i => i.value).join('');
-        if (pin.length === 4) {
-            APP.settings.pin = pin;
-            showToast('PIN saved successfully! 🔐');
-        } else {
-            showToast('Please enter 4 digits');
-        }
-    }
-
-    // ============ APP LOCK ============
-    function enterPin(val) {
-        const dots = document.querySelectorAll('#pin-dots .pin-dot');
-
-        if (val === 'del') {
-            currentPin = currentPin.slice(0, -1);
-        } else if (val === 'bio') {
-            // Try biometric
-            if (navigator.credentials && PublicKeyCredential) {
-                showToast('Biometric auth not available in browser');
-            } else {
-                showToast('Biometric not supported');
-            }
-            return;
-        } else {
-            currentPin += val;
-        }
-
-        dots.forEach((dot, i) => {
-            dot.classList.toggle('filled', i < currentPin.length);
-        });
-
-        if (currentPin.length === 4) {
-            if (currentPin === APP.settings.pin) {
-                document.getElementById('lock-screen').style.display = 'none';
-                currentPin = '';
-                dots.forEach(d => d.classList.remove('filled'));
-            } else {
-                showToast('Wrong PIN');
-                currentPin = '';
-                dots.forEach(d => d.classList.remove('filled'));
+        async function addFriend() {
+            const email = document.getElementById('new-friend-email').value;
+            try {
+                await apiService.fetch('/manage-friends', {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'add', friendEmail: email })
+                });
+                closeModal();
+                await apiService.syncData();
+                showToast('Friend added!');
+            } catch (e) {
+                showToast(e.message);
             }
         }
-    }
 
-    // ============ MODALS ============
-    function openModal(content) {
-        document.getElementById('modal-content').innerHTML = content;
-        document.getElementById('modal-overlay').classList.add('show');
-        document.getElementById('modal-sheet').classList.add('show');
-        lucide.createIcons();
-    }
+        function showAddFriendModal() {
+            openModal(`
+                <h3 class="font-bold text-lg mb-3">Add Friend</h3>
+                <p class="text-sm text-gray-500 mb-3">Enter your friend's Splitlify email</p>
+                <input type="email" id="new-friend-email" placeholder="email@example.com" class="w-full bg-gray-50 dark:bg-gray-700 rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 mb-3">
+                <button onclick="addFriend()" class="w-full bg-primary-500 text-white rounded-xl py-3 font-medium text-sm">Add Friend</button>
+            `);
+        }
 
-    function closeModal() {
-        document.getElementById('modal-overlay').classList.remove('show');
-        document.getElementById('modal-sheet').classList.remove('show');
-    }
+        // ============ GROUPS ============
+        function renderGroups() {
+            const el = document.getElementById('groups-list');
+            if (el) {
+                el.innerHTML = APP.groups.map(g => {
+                    const memberAvatars = g.members.slice(0, 3).map(mid => {
+                        const f = mid === APP.user._id ? APP.user : APP.friends.find(fr => fr._id === mid);
+                        return f ? `<img src="${f.avatar}" class="w-7 h-7 rounded-full border-2 border-white dark:border-gray-900 -ml-2 first:ml-0 object-cover">` : '';
+                    }).join('');
+                    return `<div class="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm card-hover cursor-pointer" onclick="viewGroupDetail('${g._id}')">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 rounded-xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center text-2xl shrink-0">${g.icon}</div>
+                            <div class="flex-1 min-w-0">
+                                <p class="font-semibold">${g.name}</p>
+                                <p class="text-xs text-gray-500">${g.members.length} members</p>
+                            </div>
+                            <div class="flex items-center">${memberAvatars}</div>
+                        </div>
+                    </div>`;
+                }).join('') || '<p class="text-center text-gray-400 text-sm py-8">No groups yet</p>';
+            }
+            lucide.createIcons();
+        }
 
-    function showAddPersonModal() {
-        openModal(`
-            <h3 class="font-bold text-lg mb-3">Add Person</h3>
-            <input type="text" id="new-person-name" placeholder="Name" class="w-full bg-gray-50 dark:bg-gray-700 rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 mb-3">
-            <button onclick="addPersonToSplit()" class="w-full bg-primary-500 text-white rounded-xl py-3 font-medium text-sm">Add</button>
-        `);
-    }
+        // ============ INSTALLMENTS ============
+        function renderInstallments() {
+            const list = document.getElementById('installments-list');
+            const noInst = document.getElementById('no-installments');
+            if (!list) return;
 
-    function addPersonToSplit() {
-        const name = document.getElementById('new-person-name').value;
-        if (!name) return;
-        const newFriend = { id: Date.now(), name, avatar: `http://static.photos/people/200x200/${Math.floor(Math.random()*999)}`, favorite: false, upiId: name.toLowerCase().replace(/\s/g,'') + '@upi' };
-        APP.friends.push(newFriend);
-        closeModal();
-        renderSplitMembers();
-        showToast(name + ' added!');
-    }
+            if (APP.installments.length === 0) {
+                list.innerHTML = '';
+                noInst?.classList.remove('hidden');
+                return;
+            }
+            noInst?.classList.add('hidden');
 
-    function showAddFriendModal() {
-        openModal(`
-            <h3 class="font-bold text-lg mb-3">Add Friend</h3>
-            <input type="text" id="new-friend-name" placeholder="Friend's name" class="w-full bg-gray-50 dark:bg-gray-700 rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 mb-2">
-            <input type="text" id="new-friend-upi" placeholder="UPI ID (optional)" class="w-full bg-gray-50 dark:bg-gray-700 rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 mb-3">
-            <button onclick="addFriend()" class="w-full bg-primary-500 text-white rounded-xl py-3 font-medium text-sm">Add Friend</button>
-        `);
-    }
+            list.innerHTML = APP.installments.map(inst => {
+                const progress = (inst.paid / inst.totalAmount) * 100;
+                const remaining = inst.totalAmount - inst.paid;
+                return `<div class="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm">
+                    <div class="flex items-center justify-between mb-3">
+                        <div>
+                            <h3 class="font-bold">${inst.title}</h3>
+                            <p class="text-xs text-gray-500">${inst.installmentCount} payments · ${formatCurrency(inst.perInstallment)} each</p>
+                        </div>
+                        <span class="bg-primary-100 dark:bg-primary-900/30 text-primary-600 text-xs font-semibold px-2.5 py-1 rounded-full">${inst.paid < inst.totalAmount ? 'Active' : 'Complete'}</span>
+                    </div>
+                    <div class="mb-3">
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-gray-500">Progress</span>
+                            <span class="font-medium">${formatCurrency(inst.paid)} / ${formatCurrency(inst.totalAmount)}</span>
+                        </div>
+                        <div class="h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                            <div class="h-full bg-gradient-to-r from-primary-500 to-accent-500 rounded-full transition-all" style="width:${progress}%"></div>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-500">Remaining: ${formatCurrency(remaining)}</span>
+                        ${remaining > 0 ? `<button onclick="payInstallment('${inst._id}')" class="bg-primary-500 text-white text-sm px-4 py-2 rounded-xl font-medium active:scale-95 transition-transform">Pay ${formatCurrency(inst.perInstallment)}</button>` : '<span class="text-success-500 text-sm font-medium">✓ Complete</span>'}
+                    </div>
+                </div>`;
+            }).join('');
+            lucide.createIcons();
+        }
 
-    function addFriend() {
-        const name = document.getElementById('new-friend-name').value;
-        const upi = document.getElementById('new-friend-upi').value;
-        if (!name) return;
-        APP.friends.push({ id: Date.now(), name, avatar: `http://static.photos/people/200x200/${Math.floor(Math.random()*999)}`, favorite: false, upiId: upi || name.toLowerCase().replace(/\s/g,'') + '@upi' });
-        closeModal();
-        renderFriends();
-        showToast(name + ' added as friend! 👋');
-    }
+        // ============ PAY NOW ============
+        function payViaUPI(app) {
+            const amount = document.getElementById('pay-amount').textContent;
+            const to = document.getElementById('pay-to').textContent;
+            const upiId = currentPayFriend?.upiId || 'merchant@upi';
+            const amountNum = parseFloat(amount.replace(/[^\d.]/g, '')) || 0;
+            const note = encodeURIComponent(`Payment for Splitlify bill`);
+            const tr = Date.now();
+            const link = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(to)}&am=${amountNum}&cu=INR&tn=${note}&tr=${tr}`;
+            try { window.location.href = link; } catch(e) {}
+            showToast(`Opening ${app} for payment...`);
+        }
 
-    function showCreateGroupModal() {
-        openModal(`
-            <h3 class="font-bold text-lg mb-3">Create Group</h3>
-            <input type="text" id="new-group-name" placeholder="Group name" class="w-full bg-gray-50 dark:bg-gray-700 rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 mb-2">
-            <input type="text" id="new-group-emoji" placeholder="Emoji (🏠🎉)" value="🏠" class="w-full bg-gray-50 dark:bg-gray-700 rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 mb-3">
-            <p class="text-sm text-gray-500 mb-2">Select members:</p>
-            <div class="space-y-2 mb-3">${APP.friends.map(f =>
-                `<label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" value="${f.id}" class="group-member-cb rounded text-primary-500"><span class="text-sm">${f.name}</span></label>`
-            ).join('')}</div>
-            <button onclick="createGroup()" class="w-full bg-primary-500 text-white rounded-xl py-3 font-medium text-sm">Create Group</button>
-        `);
-    }
+        function payViaUPIId() {
+            const upiId = document.getElementById('upi-id-input')?.value;
+            if (!upiId) { showToast('Please enter a UPI ID'); return; }
+            const amount = document.getElementById('pay-amount').textContent;
+            const amountNum = parseFloat(amount.replace(/[^\d.]/g, '')) || 0;
+            const note = encodeURIComponent(`Payment for Splitlify bill`);
+            const tr = Date.now();
+            const link = `upi://pay?pa=${upiId}&am=${amountNum}&cu=INR&tn=${note}&tr=${tr}`;
+            try { window.location.href = link; } catch(e) {}
+            showToast('Redirecting to payment...');
+        }
 
-    function createGroup() {
-        const name = document.getElementById('new-group-name').value;
-        const emoji = document.getElementById('new-group-emoji').value || '🏠';
-        const members = [1, ...Array.from(document.querySelectorAll('.group-member-cb:checked')).map(cb => parseInt(cb.value))];
-        if (!name) return;
-        APP.groups.push({ id: Date.now(), name, icon: emoji, members });
-        closeModal();
-        renderGroups();
-        showToast('Group created! ' + emoji);
-    }
+        // ============ SETTINGS & PROFILE ============
+        function renderProfile() {
+            if (!APP.user) return;
+            if (document.getElementById('profile-name')) document.getElementById('profile-name').textContent = APP.user.name;
+            if (document.getElementById('profile-email')) document.getElementById('profile-email').textContent = APP.user.email;
+            if (document.getElementById('stat-bills')) document.getElementById('stat-bills').textContent = APP.bills.length;
+            if (document.getElementById('stat-friends')) document.getElementById('stat-friends').textContent = APP.friends.length;
+            if (document.getElementById('stat-groups')) document.getElementById('stat-groups').textContent = APP.groups.length;
+        }
 
-    function showCurrencySelect() {
-        const currencies = ['INR','USD','EUR','GBP','JPY','AUD','CAD','SGD','AED','CNY'];
-        openModal(`
-            <h3 class="font-bold text-lg mb-3">Select Currency</h3>
-            <div class="space-y-1">${currencies.map(c =>
-                `<button onclick="setDefaultCurrency('${c}')" class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                    <span class="font-bold text-primary-500 w-12">${SYMBOLS[c]}</span>
-                    <span class="text-sm font-medium">${c}</span>
-                </button>`
-            ).join('')}</div>
-        `);
-    }
+        function toggleDarkMode() {
+            const toggle = document.getElementById('dark-toggle');
+            if (toggle) {
+                toggle.classList.toggle('on');
+                toggle.classList.toggle('off');
+                APP.settings.darkMode = toggle.classList.contains('on');
 
-    function setDefaultCurrency(c) {
-        APP.settings.currency = c;
-        document.getElementById('default-currency-label').textContent = c + ' (' + SYMBOLS[c] + ')';
-        closeModal();
-        showToast('Currency set to ' + c);
-    }
+                if (APP.settings.darkMode) {
+                    document.documentElement.classList.add('dark');
+                    document.body.classList.add('bg-gray-950', 'text-gray-100');
+                    document.body.classList.remove('bg-gray-50', 'text-gray-900');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                    document.body.classList.remove('bg-gray-950', 'text-gray-100');
+                    document.body.classList.add('bg-gray-50', 'text-gray-900');
+                }
+                renderHome();
+            }
+        }
 
-    // ============ FAQ ============
-    function toggleFaq(btn) {
-        const answer = btn.nextElementSibling;
-        const icon = btn.querySelector('[data-lucide]');
-        answer.classList.toggle('hidden');
-        icon.style.transform = answer.classList.contains('hidden') ? '' : 'rotate(180deg)';
-    }
+        function toggleAppLock() {
+            const toggle = document.getElementById('lock-toggle');
+            if (toggle) {
+                toggle.classList.toggle('on');
+                toggle.classList.toggle('off');
+                APP.settings.appLock = toggle.classList.contains('on');
+                document.getElementById('set-pin-section')?.classList.toggle('hidden', !APP.settings.appLock);
+            }
+        }
 
-    // ============ UTILITIES ============
-    function formatCurrency(amount) {
-        const sym = SYMBOLS[APP.settings.currency] || '₹';
-        const rate = RATES[APP.settings.currency] || 1;
-        const converted = amount * rate;
-        return sym + converted.toFixed(2);
-    }
-
-    function formatDate(dateStr) {
-        const d = new Date(dateStr);
-        return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
-    }
-
-    function showToast(msg) {
-        const toast = document.getElementById('toast');
-        document.getElementById('toast-msg').textContent = msg;
-        toast.classList.add('show');
-        setTimeout(() => toast.classList.remove('show'), 2500);
-    }
-
+        // Missing UI functions
+        function showCurrencySelect() { showToast('Currency settings coming soon'); }
+        function showCreateGroupModal() { showToast('Group creation coming soon'); }
+        function convertCurrency() {
+            const from = document.getElementById('currency-from')?.value || 'INR';
+            const to = document.getElementById('currency-to')?.value || 'USD';
+            const amount = parseFloat(document.getElementById('currency-amount')?.value || 0);
+            const inrAmount = amount / RATES[from];
+            const result = inrAmount * RATES[to];
+            if (document.getElementById('currency-result')) document.getElementById('currency-result').textContent = SYMBOLS[to] + result.toFixed(2);
+        }
+        function swapCurrencies() {
+            const from = document.getElementById('currency-from');
+            const to = document.getElementById('currency-to');
+            if (from && to) {
+                const temp = from.value; from.value = to.value; to.value = temp;
+                convertCurrency();
+            }
+        }
+        function payInstallment(id) { showToast('Installment payment placeholder'); }
+        function selectSplitMember(id) { /* Toggle member logic */ }
+        function pinInput(el, idx) {
+            const inputs = document.querySelectorAll('.pin-input');
+            if (el.value && idx < 3) inputs[idx + 1].focus();
+        }
+        function savePin() {
+            const inputs = document.querySelectorAll('.pin-input');
+            const pin = Array.from(inputs).map(i => i.value).join('');
+            if (pin.length === 4) { APP.settings.pin = pin; showToast('PIN saved!'); }
+        }
+        function enterPin(val) {
+            const dots = document.querySelectorAll('#pin-dots .pin-dot');
+            if (val === 'del') { currentPin = currentPin.slice(0, -1); }
+            else if (val === 'bio') { showToast('Biometric not supported'); return; }
+            else { currentPin += val; }
+            dots.forEach((dot, i) => dot.classList.toggle('filled', i < currentPin.length));
+            if (currentPin.length === 4) {
+                if (currentPin === APP.settings.pin) { document.getElementById('lock-screen').style.display = 'none'; currentPin = ''; }
+                else { showToast('Wrong PIN'); currentPin = ''; dots.forEach(d => d.classList.remove('filled')); }
+            }
+        }
+        function openModal(content) {
+            document.getElementById('modal-content').innerHTML = content;
+            document.getElementById('modal-overlay').classList.add('show');
+            document.getElementById('modal-sheet').classList.add('show');
+            lucide.createIcons();
+        }
+        function closeModal() {
+            document.getElementById('modal-overlay').classList.remove('show');
+            document.getElementById('modal-sheet').classList.remove('show');
+        }
+        function showAddPersonModal() { showToast('Adding persons manually coming soon'); }
+        function addPersonToSplit() {}
     // ============ BACK BUTTON HANDLER ============
     window.addEventListener('popstate', (e) => {
         goBack();
